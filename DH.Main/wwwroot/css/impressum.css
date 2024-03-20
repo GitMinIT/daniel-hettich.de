@@ -1,0 +1,21 @@
+﻿.impressum {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+}
+
+    .impressum h1 {
+        font-size: 30px;
+        font-weight: bold;
+    }
+
+    .impressum h2 {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .impressum a {
+        text-decoration: none;
+        color: #258cfb;
+        font-size: 13px;
+        font-weight: bold;
+    }
