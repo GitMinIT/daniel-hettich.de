@@ -29,7 +29,6 @@ try
     Startup.MigrateDatabase(app, config);
 
     Log.Debug("Application runs on https://localhost:7115");
-
     app.Run();
 }
 catch (Exception ex)
