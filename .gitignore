@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/DH.Main/wwwroot/images/selfie.jpg
+/DH.Main/appsettings.json
+/DH.Main/appsettings.Development.json
