@@ -1,13 +1,24 @@
 async function initLang() {
-    const response = await fetch('/lang/translations.json');
-    const translations = await response.json();
+    const fallbackLang = 'en';
+    let currentLang = localStorage.getItem('pref-lang') || 'de';
     
-    let currentLang = localStorage.getItem('pref-lang') || 'en';
-    
-    function setLanguage(lang) {
-        document.title = translations[lang].title;
-        document.getElementById('welcome').textContent = translations[lang].welcome;
-        document.getElementById('description').textContent = translations[lang].description;
+    async function loadTranslation(lang) {
+        try {
+            const response = await fetch(`/lang/${lang}.json`);
+            if (!response.ok) throw new Error('Language file not found');
+            return await response.json();
+        } catch (e) {
+            console.warn(`Could not load ${lang}, falling back to ${fallbackLang}`);
+            const response = await fetch(`/lang/${fallbackLang}.json`);
+            return await response.json();
+        }
+    }
+
+    async function setLanguage(lang) {
+        const translations = await loadTranslation(lang);
+        document.title = translations.title;
+        document.getElementById('welcome').textContent = translations.welcome;
+        document.getElementById('description').textContent = translations.description;
         
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
