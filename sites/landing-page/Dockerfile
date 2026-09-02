@@ -1,5 +1,6 @@
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY . /usr/share/nginx/html/
-# SSL certificates will be mounted as a volume for safety
+COPY html/index.html /usr/share/nginx/html/index.html
+COPY assets/ /usr/share/nginx/html/assets/
+COPY lang/ /usr/share/nginx/html/lang/
 EXPOSE 80

@@ -23,4 +23,27 @@ async function initLang() {
     setLanguage(currentLang);
 }
 
-window.addEventListener('DOMContentLoaded', initLang);
+function initTheme() {
+    const savedTheme = localStorage.getItem('pref-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('pref-theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
+}
+
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('theme-toggle');
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    initLang();
+    initTheme();
+});
