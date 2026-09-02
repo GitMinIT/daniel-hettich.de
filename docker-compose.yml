@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  proxy:
+    image: nginx:alpine
+    container_name: global-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/nginx/ssl:ro
+    networks:
+      - web-network
+    restart: always
+
+  landing-page:
+    build: ./sites/landing-page
+    container_name: landing-page
+    networks:
+      - web-network
+    restart: always
+
+networks:
+  web-network:
+    driver: bridge
