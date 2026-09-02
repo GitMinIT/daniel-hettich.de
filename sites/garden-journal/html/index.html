@@ -84,8 +84,22 @@
 
             <!-- Crops Workspace -->
             <section id="workspace-crops" class="workspace hidden">
-                <h2>Kulturen</h2>
-                <p>Deine bibliothek an Gemüse-Sorten.</p>
+                <div class="section-heading">
+                    <h2>Kulturen</h2>
+                    <p>Deine bibliothek an Gemüse-Sorten.</p>
+                </div>
+                <div class="form-group">
+                    <div class="input-field">
+                        <label>Kulturname</label>
+                        <input id="crop-name" placeholder="z.B. Tomate">
+                    </div>
+                    <div class="input-field">
+                        <label>Farbe (Hex)</label>
+                        <input id="crop-color" type="color" value="#4CAF50">
+                    </div>
+                    <button id="add-crop-btn" class="btn btn-primary">＋ Kultur hinzufügen</button>
+                </div>
+                <div id="crop-list" class="crop-list"></div>
             </section>
         </main>
     </div>
