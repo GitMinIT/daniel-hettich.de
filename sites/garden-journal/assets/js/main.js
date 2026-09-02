@@ -9,8 +9,33 @@ function saveState() {
     localStorage.setItem('gj_crops', JSON.stringify(APP_STATE.crops));
 }
 
+function updateBeetSelect() {
+    const select = document.getElementById('target-beet');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Select Bed --</option>';
+    APP_STATE.beets.forEach(beet => {
+        const opt = document.createElement('option');
+        opt.value = beet.id;
+        opt.textContent = beet.name;
+        select.appendChild(opt);
+    });
+}
+
+function updateCropSelect() {
+    const select = document.getElementById('target-crop');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Select Crop --</option>';
+    APP_STATE.crops.forEach(crop => {
+        const opt = document.createElement('option');
+        opt.value = crop.id;
+        opt.textContent = crop.name;
+        select.appendChild(opt);
+    });
+}
+
 function renderBeets() {
     const container = document.getElementById('beet-list');
+    if (!container) return;
     container.innerHTML = '';
 
     if (APP_STATE.beets.length === 0) {
@@ -42,6 +67,7 @@ function renderBeets() {
 
 function renderCrops() {
     const container = document.getElementById('crop-list');
+    if (!container) return;
     container.innerHTML = '';
 
     if (APP_STATE.crops.length === 0) {
@@ -99,6 +125,7 @@ function editCrop(index) {
 
 function renderNotifications() {
     const panel = document.getElementById('notifications');
+    if (!panel) return;
     const currentMonth = new Date().getMonth() + 1;
     const alerts = [];
 
@@ -132,55 +159,64 @@ async function init() {
             tab.classList.add('active');
             const target = tab.textContent.trim().toLowerCase();
             const key = target.includes('planung') ? 'planning' : target.includes('kalender') ? 'calendar' : 'crops';
-            Object.values(workspaces).forEach(w => w.classList.add('hidden'));
-            workspaces[key].classList.remove('hidden');
+            Object.values(workspaces).forEach(w => w && w.classList.add('hidden'));
+            if (workspaces[key]) workspaces[key].classList.remove('hidden');
         });
     });
 
-    document.getElementById('add-beet-btn').addEventListener('click', () => {
-        const name = document.getElementById('beet-name').value;
-        const width = document.getElementById('beet-width').value;
-        const length = document.getElementById('beet-length').value;
-        if (!name) return alert('Enter name');
-        APP_STATE.beets.push({ id: 'beet-' + Math.random().toString(36).substr(2, 9), name, width, length, plantings: [] });
-        saveState();
-        renderBeets();
-        updateBeetSelect();
-        document.getElementById('beet-name').value = '';
-    });
-
-    document.getElementById('submit-planting').addEventListener('click', () => {
-        const beetId = document.getElementById('target-beet').value;
-        const cropId = document.getElementById('target-crop').value;
-        const count = document.getElementById('planting-count').value;
-        const date = document.getElementById('planting-date').value;
-        if (!beetId || !cropId) return alert('Select bed and crop');
-        const beet = APP_STATE.beets.find(b => b.id === beetId);
-        if (beet) {
-            if (!beet.plantings) beet.plantings = [];
-            beet.plantings.push({ cropId, count, date });
+    const addBeetBtn = document.getElementById('add-beet-btn');
+    if (addBeetBtn) {
+        addBeetBtn.addEventListener('click', () => {
+            const name = document.getElementById('beet-name').value;
+            const width = document.getElementById('beet-width').value;
+            const length = document.getElementById('beet-length').value;
+            if (!name) return alert('Enter name');
+            APP_STATE.beets.push({ id: 'beet-' + Math.random().toString(36).substr(2, 9), name, width, length, plantings: [] });
             saveState();
             renderBeets();
-        }
-    });
-
-    document.getElementById('add-crop-btn').addEventListener('click', () => {
-        const name = document.getElementById('crop-name').value;
-        const color = document.getElementById('crop-color').value;
-        const spacing = prompt('Planting distance (cm):', '50');
-        if (!name) return alert('Enter crop name');
-        APP_STATE.crops.push({
-            id: 'crop-' + Math.random().toString(36).substr(2, 9),
-            name,
-            color,
-            spacing,
-            sowStart: 3, sowEnd: 5, harvestStart: 7, harvestEnd: 10
+            updateBeetSelect();
+            document.getElementById('beet-name').value = '';
         });
-        saveState();
-        renderCrops();
-        updateCropSelect();
-        document.getElementById('crop-name').value = '';
-    });
+    }
+
+    const submitPlanting = document.getElementById('submit-planting');
+    if (submitPlanting) {
+        submitPlanting.addEventListener('click', () => {
+            const beetId = document.getElementById('target-beet').value;
+            const cropId = document.getElementById('target-crop').value;
+            const count = document.getElementById('planting-count').value;
+            const date = document.getElementById('planting-date').value;
+            if (!beetId || !cropId) return alert('Select bed and crop');
+            const beet = APP_STATE.beets.find(b => b.id === beetId);
+            if (beet) {
+                if (!beet.plantings) beet.plantings = [];
+                beet.plantings.push({ cropId, count, date });
+                saveState();
+                renderBeets();
+            }
+        });
+    }
+
+    const addCropBtn = document.getElementById('add-crop-btn');
+    if (addCropBtn) {
+        addCropBtn.addEventListener('click', () => {
+            const name = document.getElementById('crop-name').value;
+            const color = document.getElementById('crop-color').value;
+            const spacing = prompt('Planting distance (cm):', '50');
+            if (!name) return alert('Enter crop name');
+            APP_STATE.crops.push({
+                id: 'crop-' + Math.random().toString(36).substr(2, 9),
+                name,
+                color,
+                spacing,
+                sowStart: 3, sowEnd: 5, harvestStart: 7, harvestEnd: 10
+            });
+            saveState();
+            renderCrops();
+            updateCropSelect();
+            document.getElementById('crop-name').value = '';
+        });
+    }
 
     const importInput = document.createElement('input');
     importInput.type = 'file';
