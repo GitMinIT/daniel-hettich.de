@@ -91,14 +91,44 @@ async function init() {
         });
     });
 
+    // Add Bed Logic
+    const addBeetBtn = document.getElementById('add-beet-btn');
+    addBeetBtn.addEventListener('click', () => {
+        const name = document.getElementById('beet-name').value;
+        const width = document.getElementById('beet-width').value;
+        const length = document.getElementById('beet-length').value;
+        
+        if (!name) {
+            alert('Please enter a bed name');
+            return;
+        }
+
+        const newBeet = {
+            id: 'beet-' + Math.random().toString(36).substr(2, 9),
+            name,
+            width,
+            length,
+            plantings: []
+        };
+        APP_STATE.beets.push(newBeet);
+        saveState();
+        renderBeets();
+        updateBeetSelect();
+        document.getElementById('beet-name').value = '';
+    });
+
     // Planting Form
-    const plantingForm = document.getElementById('planting-form');
-    plantingForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    const plantingBtn = document.getElementById('submit-planting');
+    plantingBtn.addEventListener('click', () => {
         const beetId = document.getElementById('target-beet').value;
         const cropId = document.getElementById('target-crop').value;
         const count = document.getElementById('planting-count').value;
         const date = document.getElementById('planting-date').value;
+
+        if (!beetId || !cropId) {
+            alert('Please select both a bed and a crop');
+            return;
+        }
 
         const beet = APP_STATE.beets.find(b => b.id === beetId);
         if (beet) {
@@ -106,18 +136,11 @@ async function init() {
             beet.plantings.push({ cropId, count, date });
             saveState();
             renderBeets();
-            plantingForm.reset();
         }
     });
 
     // Update Crop Select
-    const cropSelect = document.getElementById('target-crop');
-    APP_STATE.crops.forEach(crop => {
-        const opt = document.createElement('option');
-        opt.value = crop.id;
-        opt.textContent = crop.name;
-        cropSelect.appendChild(opt);
-    });
+    updateCropSelect();
 
     // Import/Export
     const importInput = document.createElement('input');
@@ -154,6 +177,8 @@ async function init() {
                 if (data.crops) APP_STATE.crops = data.crops;
                 saveState();
                 renderBeets();
+                updateBeetSelect();
+                updateCropSelect();
                 alert('Import successful!');
             } catch (err) { alert('Import error: ' + err.message); }
         };
@@ -163,6 +188,30 @@ async function init() {
     // Init
     renderBeets();
     renderNotifications();
+    updateBeetSelect();
+    updateCropSelect();
+}
+
+function updateBeetSelect() {
+    const select = document.getElementById('target-beet');
+    select.innerHTML = '<option value="">-- Select Bed --</option>';
+    APP_STATE.beets.forEach(beet => {
+        const opt = document.createElement('option');
+        opt.value = beet.id;
+        opt.textContent = beet.name;
+        select.appendChild(opt);
+    });
+}
+
+function updateCropSelect() {
+    const select = document.getElementById('target-crop');
+    select.innerHTML = '<option value="">-- Select Crop --</option>';
+    APP_STATE.crops.forEach(crop => {
+        const opt = document.createElement('option');
+        opt.value = crop.id;
+        opt.textContent = crop.name;
+        select.appendChild(opt);
+    });
 }
 
 window.addEventListener('DOMContentLoaded', init);
