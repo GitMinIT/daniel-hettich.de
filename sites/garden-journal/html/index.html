@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gartenjournal - Daniel Hettich</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">✦</div>
+                <div class="brand-title">Mein Gemüsegarten</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn">Import</button>
+                <button class="btn btn-primary">Sichern</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <nav class="tabs">
+                <button class="tab active">Beetplanung</button>
+                <button class="tab">Pflanzkalender</button>
+                <button class="tab">Kulturen</button>
+            </nav>
+
+            <section class="workspace">
+                <div class="section-heading">
+                    <h2>Beetplanung</h2>
+                    <p>Dokumentiere deine Beete und plane deine Kulturen.</p>
+                </div>
+
+                <form id="beet-form" class="form-group">
+                    <div class="input-field">
+                        <label>Beetname</label>
+                        <input id="beet-name" placeholder="z.B. Sonnenbeet" required>
+                    </div>
+                    <div class="input-field">
+                        <label>Breite (m)</label>
+                        <input id="beet-width" type="number" step="0.1" value="1.2" required>
+                    </div>
+                    <div class="input-field">
+                        <label>Länge (m)</label>
+                        <input id="beet-length" type="number" step="0.1" value="3.0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">＋ Beet anlegen</button>
+                </form>
+
+                <div id="beet-list" class="beet-list"></div>
+            </section>
+        </main>
+    </div>
+    <script src="/assets/js/main.js"></script>
+</body>
+</html>
