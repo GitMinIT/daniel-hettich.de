@@ -2,3 +2,4 @@ etc/letsencrypt/
 .env
 etc/letsencrypt/
 .env
+secrets/
