@@ -1,5 +1,12 @@
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY html/index.html /usr/share/nginx/html/index.html
-COPY assets/ /usr/share/nginx/html/assets/
-EXPOSE 80
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine
+WORKDIR /app
+COPY --from=builder /app /app
+EXPOSE 3000
+CMD ["npm", "start"]
