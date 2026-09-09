@@ -46,3 +46,32 @@ When adding a new project (e.g., `nextcloud.daniel-hettich.de`):
 2. Commit changes to GitHub.
 3. Pull changes on the server.
 4. Run `docker compose up -d --build` to apply updates.
+
+## 🤝 Collaboration Guidelines (fork & branch model)
+
+Multiple people work on this project. These guidelines are **not set in stone** — propose improvements via PR.
+
+### How we work
+1. **Fork** the repo on GitHub (or use a feature branch if you have write access).
+2. Branch naming:
+   - `feature/<topic>` — new functionality
+   - `fix/<topic>` — bug fixes
+   - `docs/<topic>` — documentation only
+3. **One logical change-set per branch/PR.** Don't mix unrelated fixes.
+4. Test locally before opening a PR (build the affected containers, verify routing).
+5. Open a **Pull Request** against `main` and let a maintainer review it.
+6. Never commit directly to `main` (except trivial doc typo fixes).
+
+### Commit etiquette
+- Small, focused commits with clear messages:
+  - Good: `Add security headers to garden-journal proxy config`
+  - Bad: `changes`, `wip final FINAL`
+- Rebase onto `main` before merging; keep history linear.
+- Never force-push to shared branches.
+
+### Hard rules (because this host runs multiple projects)
+- **Container names** must be globally unique on the host.
+- **No public ports** other than the Global Proxy (80/443).
+- **No secrets in git**: `.env`, tokens, private keys stay out via `.gitignore`.
+- **Routing changes** must be mirrored to the actual proxy mount on the server and reloaded (`nginx -t && nginx -s reload`).
+- **Docs**: update this file and `AGENTS.md` when architecture, containers or routing change.
