@@ -102,3 +102,7 @@ Checklist for new pages/PRs:
 - [ ] If it's an impressum: "KI-Hinweis" section included
 
 A PR that adds a page without the badge will be asked to fix it before merge.
+
+### Agent note
+
+> **Applies to agents too:** automated agents (including AI coding agents working on this server) follow the same fork & PR flow as humans. The agent's fork/branch should indicate the task, e.g. `agent/<topic>` or `feature/<topic>`. Emergency hotfixes follow the retro-PR rule above.
