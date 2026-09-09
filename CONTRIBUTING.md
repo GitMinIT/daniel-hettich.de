@@ -75,3 +75,30 @@ Multiple people work on this project. These guidelines are **not set in stone** 
 - **No secrets in git**: `.env`, tokens, private keys stay out via `.gitignore`.
 - **Routing changes** must be mirrored to the actual proxy mount on the server and reloaded (`nginx -t && nginx -s reload`).
 - **Docs**: update this file and `AGENTS.md` when architecture, containers or routing change.
+
+### AI-notice requirement (mandatory)
+
+This project discloses that its content, design, images and source code were created with AI assistance. **Every new page must include the AI-notice badge**; impressum pages additionally need the "KI-Hinweis" section.
+
+**Badge** — fixed top-left, always visible, slightly transparent, links to `/impressum`:
+
+```html
+<a class="ai-note" href="/impressum" title="Diese Seite wurde mit Unterstützung von KI erstellt" aria-label="Hinweis: Diese Seite wurde mit Unterstützung von KI erstellt. Zum Impressum.">✳ Mit KI erstellt</a>
+```
+
+The badge CSS lives in `sites/landing-page/assets/css/style.css` (`.ai-note`) — new static pages just add the HTML snippet above.
+
+**Impressum "KI-Hinweis" section** (required text):
+
+```html
+<h2>KI-Hinweis</h2>
+<p>Alle Inhalte, das Design sowie die zugrunde liegenden Bilder und Quelltexte dieser Website
+wurden mit Unterstützung durch Künstliche Intelligenz (KI) erstellt und von
+Daniel Hettich kuratiert.</p>
+```
+
+Checklist for new pages/PRs:
+- [ ] AI badge present and linking to the impressum
+- [ ] If it's an impressum: "KI-Hinweis" section included
+
+A PR that adds a page without the badge will be asked to fix it before merge.
