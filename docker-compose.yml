@@ -21,13 +21,6 @@ services:
       - web-network
     restart: always
 
-  garden-journal:
-    build: ./sites/garden-journal
-    container_name: garden-journal
-    networks:
-      - web-network
-    restart: always
-
 networks:
   web-network:
     driver: bridge
