@@ -52,7 +52,7 @@ When adding a new project (e.g., `nextcloud.daniel-hettich.de`):
 Multiple people work on this project. These guidelines are **not set in stone** — propose improvements via PR.
 
 ### How we work
-1. **Fork** the repo on GitHub (or use a feature branch if you have write access).
+1. **Fork** the repo on GitHub — this applies to **everyone**, including maintainers with write access. No direct commits to `main`, ever.
 2. Branch naming:
    - `feature/<topic>` — new functionality
    - `fix/<topic>` — bug fixes
@@ -60,7 +60,7 @@ Multiple people work on this project. These guidelines are **not set in stone** 
 3. **One logical change-set per branch/PR.** Don't mix unrelated fixes.
 4. Test locally before opening a PR (build the affected containers, verify routing).
 5. Open a **Pull Request** against `main` and let a maintainer review it.
-6. Never commit directly to `main` (except trivial doc typo fixes).
+6. **Nobody pushes to `main` directly** — all changes (including maintainers' and agent changes) go through a PR. Emergency hotfixes may land directly but require a retro-PR documenting the change.
 
 ### Commit etiquette
 - Small, focused commits with clear messages:
