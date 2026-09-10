@@ -1,0 +1,10 @@
+{
+    "name": "daniel-hettich-landing",
+    "version": "2.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Static digital business card — tests for the pure water/body physics in assets/js/main.js",
+    "scripts": {
+        "test": "node --test test/*.test.mjs"
+    }
+}

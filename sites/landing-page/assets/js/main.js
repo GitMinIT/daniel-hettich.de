@@ -1,5 +1,7 @@
 /* Daniel Hettich — punk edition
-   i18n + theme + flippable card + draggable stickers + page-wide water */
+   i18n + theme + flippable card + draggable stickers + page-wide water
+   Water & body physics live in pure functions (WaterSim / BodySim below)
+   so they can be unit-tested in Node (see test/water.test.mjs). */
 
 /* ================= i18n ================= */
 
@@ -17,7 +19,8 @@ const TRANSLATIONS = {
         sticker_hint: "Sticker: ziehen zum Umsortieren, Doppelklick zum Drehen. Gieß sie nass!",
         contact_title: "Kontakt",
         contact_hint: "Schreib mir einfach — ich freu mich über Post von Menschen.",
-        water_hint: "Wasser an: gedrückt halten zum Gießen 💧",
+        water_hint: "Wasser-Werkzeug aktiv — gedrückt halten zum Gießen 💧",
+        water_hint_off: "Wasser aus — 💧 zum Aktivieren",
         wt_drop: "Wasser gießen (W)",
         wt_stir: "Rühren (R)",
         wt_drain: "Abfließen lassen (D)"
@@ -35,7 +38,8 @@ const TRANSLATIONS = {
         sticker_hint: "Stickers: drag to rearrange, double-click to spin. Water them!",
         contact_title: "Contact",
         contact_hint: "Drop me a line — I love hearing from people.",
-        water_hint: "Water on: hold to pour 💧",
+        water_hint: "Water tool active — hold to pour 💧",
+        water_hint_off: "Water off — click 💧 to activate",
         wt_drop: "Pour water (W)",
         wt_stir: "Stir (R)",
         wt_drain: "Drain (D)"
@@ -143,10 +147,7 @@ function initCard() {
 /* ================= stickers: drag + dblclick spin ================= */
 
 function initStickers() {
-    const stickers = document.querySelectorAll(".sticker");
-
-    stickers.forEach(sticker => {
-        // natural resting rotation from CSS class is overridden inline when dragged
+    document.querySelectorAll(".sticker").forEach(sticker => {
         let rot = 0;
         sticker.addEventListener("dblclick", () => {
             rot += (Math.random() < 0.5 ? -22 : 22);
@@ -154,48 +155,33 @@ function initStickers() {
         });
 
         sticker.addEventListener("pointerdown", (e) => {
-            // ignore drags starting on links inside stickers (none yet, but safe)
             if (e.button !== 0 && e.pointerType === "mouse") return;
+            // don't fight with water toolbar
             e.preventDefault();
-            const board = sticker.parentElement;
-            const boardRect = board.getBoundingClientRect();
             const rect = sticker.getBoundingClientRect();
-
-            // switch from static flow to fixed positioning at current spot
             const startX = e.clientX, startY = e.clientY;
-            const origLeft = rect.left, origTop = rect.top;
-            let curX = origLeft, curY = origTop;
+            const grabDX = startX - (rect.left + rect.width / 2);
+            const grabDY = startY - (rect.top + rect.height / 2);
+            let droppedFree = false;
 
-            // remember the slot so cancel can restore layout
             sticker.classList.add("dragging");
 
             function move(ev) {
-                curX = origLeft + (ev.clientX - startX);
-                curY = origTop + (ev.clientY - startY);
                 sticker.classList.add("free");
-                sticker.style.left = curX + "px";
-                sticker.style.top = curY + "px";
-                sticker.style.transform = `rotate(${rot}deg) scale(1.08)`;
+                sticker.style.left = (ev.clientX - rect.width / 2) + "px";
+                sticker.style.top = (ev.clientY - rect.height / 2 - grabDY + rect.height / 2) + "px";
+                sticker.style.transform = `rotate(${rot}deg)`;
             }
 
-            function up() {
+            function up(ev) {
                 window.removeEventListener("pointermove", move);
                 window.removeEventListener("pointerup", up);
                 window.removeEventListener("pointercancel", up);
                 sticker.classList.remove("dragging");
-                // decide: back into flow (if near board) or stay free-floating
-                const r = sticker.getBoundingClientRect();
-                const b = board.getBoundingClientRect();
-                const nearBoard = r.top < b.bottom + 80 && r.bottom > b.top - 120;
-                if (nearBoard) {
-                    sticker.classList.remove("free");
-                    sticker.style.left = sticker.style.top = "";
-                    sticker.style.transform = "";   // CSS class rotation takes over
-                    rot = 0;
-                } else {
-                    // keep floating at dropped position (fixed)
-                    sticker.style.transform = `rotate(${rot}deg)`;
-                }
+                // sticker stays exactly where dropped — it's a physics body now
+                sticker.classList.add("free");
+                sticker._vx = 0; sticker._vy = 0; sticker._vr = 0;
+                sticker._rot = rot;
             }
 
             window.addEventListener("pointermove", move);
@@ -205,176 +191,261 @@ function initStickers() {
     });
 }
 
-/* ================= page-wide water =================
-   Cellular water on a coarse grid spanning the whole viewport.
-   - canvas is fixed, pointer-events none, z-index above content
-   - pouring: hold mouse/touch anywhere (when tool = drop)
-   - stickers are read as rects; water kicks them (impulse) on contact
-   - free (dropped) stickers fall & tumble like physics objects
-==================================================== */
+/* ================= pure simulation cores =================
+   WaterSim: cellular water on a wrapless grid (walls at borders).
+   0 empty, 1 water. Pure — no DOM access. Unit-tested.
+   BodySim: point-mass physics for dropped stickers.
+=========================================================== */
+
+const WaterSim = {
+    create(rows, cols) {
+        return {
+            rows, cols,
+            grid: new Uint8Array(rows * cols),
+            frame: 0
+        };
+    },
+
+    at(sim, x, y) {
+        if (x < 0 || x >= sim.cols || y < 0 || y >= sim.rows) return 1; // border = wall
+        return sim.grid[y * sim.cols + x];
+    },
+
+    set(sim, x, y, v) {
+        if (x >= 0 && x < sim.cols && y >= 0 && y < sim.rows) sim.grid[y * sim.cols + x] = v;
+    },
+
+    /** one water step; returns number of cells that moved */
+    step(sim) {
+        const moved = { n: 0 };
+        const dirFlip = (sim.frame % 2 === 0);
+        sim.frame++;
+        // viscosity: sideways spreading happens only every 3rd frame.
+        // This lets pools settle instead of oscillating forever.
+        const canSpread = (sim.frame % 3 === 0);
+        for (let y = sim.rows - 1; y >= 0; y--) {
+            for (let i = 0; i < sim.cols; i++) {
+                const x = dirFlip ? i : sim.cols - 1 - i;
+                if (sim.grid[y * sim.cols + x] !== 1) continue;
+                if (WaterSim.at(sim, x, y + 1) === 0) {
+                    WaterSim.set(sim, x, y, 0); WaterSim.set(sim, x, y + 1, 1);
+                    moved.n++;
+                    continue;
+                }
+                if (!canSpread) continue;
+                const dir = ((y + sim.frame) % 2 === 0) ? 1 : -1;
+                for (const dx of [dir, -dir]) {
+                    // spread only if the water can eventually fall that way:
+                    // diagonal-below in that direction must be free, or the
+                    // side cell itself must have space to sink into
+                    if (WaterSim.at(sim, x + dx, y + 1) === 0) {
+                        WaterSim.set(sim, x, y, 0); WaterSim.set(sim, x + dx, y + 1, 1);
+                        moved.n++;
+                        break;
+                    }
+                    const sideEmpty = WaterSim.at(sim, x + dx, y) === 0;
+                    const sideCanFall = WaterSim.at(sim, x + 2 * dx, y + 1) === 0;
+                    if (sideEmpty && sideCanFall) {
+                        WaterSim.set(sim, x, y, 0); WaterSim.set(sim, x + dx, y, 1);
+                        moved.n++;
+                        break;
+                    }
+                }
+            }
+        }
+        return moved.n;
+    },
+
+    /** pour a circular blob of water */
+    pour(sim, cx, cy, r = 2) {
+        for (let dy = -r; dy <= r; dy++)
+            for (let dx = -r; dx <= r; dx++)
+                if (dx * dx + dy * dy <= r * r) WaterSim.set(sim, cx + dx, cy + dy, 1);
+    },
+
+    /** push water cells in a radius sideways (stir) */
+    stir(sim, cx, cy, r = 3) {
+        for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+                const x = cx + dx, y = cy + dy;
+                if (WaterSim.at(sim, x, y) !== 1) continue;
+                const push = dx >= 0 ? 2 : -2;
+                if (WaterSim.at(sim, x + push, y) === 0) {
+                    WaterSim.set(sim, x, y, 0);
+                    WaterSim.set(sim, x + push, y, 1);
+                }
+            }
+        }
+    }
+};
+
+const BodySim = {
+    /** integrate one body for one tick; returns nothing, mutates body */
+    step(body, world) {
+        const { width, height } = world;
+        body.vy += 0.5;                                  // gravity
+        if (body.inWater) {                              // buoyant drag
+            body.vy = body.vy * 0.82 - 0.35;
+            body.vx *= 0.9;
+            body.vr *= 0.9;
+        }
+        body.x += body.vx;
+        body.y += body.vy;
+        body.r += body.vr;
+
+        const floor = height - body.h;
+        if (body.y > floor) { body.y = floor; body.vy *= -0.3; body.vx *= 0.7; body.vr *= 0.6; }
+        if (body.y < 0) { body.y = 0; body.vy = Math.abs(body.vy) * 0.3; }
+        if (body.x < 0) { body.x = 0; body.vx *= -0.4; }
+        if (body.x > width - body.w) { body.x = width - body.w; body.vx *= -0.4; }
+    },
+
+    /** water splash impulse: does any part of the body touch a water cell? */
+    waterKick(body, waterSim, cell, chance = 0.6, rng = Math.random) {
+        const x0 = Math.floor(body.x / cell), x1 = Math.floor((body.x + body.w) / cell);
+        const y0 = Math.floor(body.y / cell), y1 = Math.floor((body.y + body.h) / cell);
+        for (let y = y0; y <= y1; y++) {
+            for (let x = x0; x <= x1; x++) {
+                if (WaterSim.at(waterSim, x, y) === 1) {
+                    body.vy -= 1.6;
+                    body.vx += (rng() - 0.5) * 1.6;
+                    body.vr += (rng() - 0.5) * 6;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+
+/* ================= page-wide water (DOM glue) ================= */
 
 function initWater() {
     const canvas = document.getElementById("water-canvas");
     const ctx = canvas.getContext("2d");
-    const CELL = 7;                      // px per cell
-    let W, H, cols, rows, grid, img, px, dpr;
-
+    const CELL = 8;
     const dropBtn = document.getElementById("wt-drop");
     const stirBtn = document.getElementById("wt-stir");
     const drainBtn = document.getElementById("wt-drain");
     const hint = document.getElementById("water-hint");
 
-    let mode = "drop";                   // drop | stir | drain
-    let pouring = false, stirring = false;
-    let mx = -1, my = -1, frame = 0;
-
-    // draggable "free" stickers + their physics
-    const bodies = [];                   // {el, x, y, vx, vy, w, h, r}
+    let W, H, cols, rows, sim, img, px;
+    let mode = "drop";
+    let pointerDown = false;
+    let mx = -1, my = -1;
 
     function resize() {
-        dpr = window.devicePixelRatio || 1;
-        canvas.width = Math.floor(innerWidth * dpr / CELL) * CELL;
-        canvas.height = Math.floor(innerHeight * dpr / CELL) * CELL;
-        cols = canvas.width / CELL;
-        rows = canvas.height / CELL;
-        grid = new Uint8Array(cols * rows);
+        const dpr = window.devicePixelRatio || 1;
+        W = innerWidth; H = innerHeight;
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        canvas.style.width = W + "px";
+        canvas.style.height = H + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cols = Math.ceil(W / CELL);
+        rows = Math.ceil(H / CELL);
+        sim = WaterSim.create(rows, cols);
         img = ctx.createImageData(cols, rows);
         px = img.data;
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        canvas.style.width = innerWidth + "px";
-        canvas.style.height = innerHeight + "px";
-        ctx.scale(dpr, dpr);
     }
+
+    function render() {
+        for (let i = 0; i < cols * rows; i++) {
+            const o = i * 4;
+            if (sim.grid[i] === 0) { px[o + 3] = 0; continue; }
+            px[o] = 86; px[o + 1] = 134; px[o + 2] = 214;
+            px[o + 3] = 170;
+        }
+        ctx.clearRect(0, 0, W, H);
+        const off = document.createElement("canvas");
+        off.width = cols; off.height = rows;
+        off.getContext("2d").putImageData(img, 0, 0);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(off, 0, 0, cols * CELL, rows * CELL, 0, 0, cols * CELL, rows * CELL);
+    }
+
+    const bodies = [];
 
     function collectBodies() {
         bodies.length = 0;
         document.querySelectorAll(".sticker.free").forEach(el => {
             const r = el.getBoundingClientRect();
             bodies.push({
-                el, x: r.left, y: r.top, w: r.width, h: r.height,
-                vx: el._vx || 0, vy: el._vy || 0, r: el._rot || 0,
-                vr: el._vr || 0
+                el,
+                x: r.left, y: r.top, w: r.width, h: r.height,
+                vx: el._vx || 0, vy: el._vy || 0,
+                r: el._rot || 0, vr: el._vr || 0
             });
         });
     }
 
-    function idx(x, y) { return y * cols + x; }
-    function get(x, y) { return (x < 0 || x >= cols || y < 0 || y >= rows) ? 1 : grid[idx(x, y)]; }
-    function set(x, y, v) { if (x >= 0 && x < cols && y >= 0 && y < rows) grid[idx(x, y)] = v; }
-
-    function render() {
-        for (let i = 0; i < cols * rows; i++) {
-            const v = grid[i];
-            const o = i * 4;
-            if (v === 0) { px[o + 3] = 0; continue; }
-            px[o] = 86; px[o + 1] = 134; px[o + 2] = 214;
-            px[o + 3] = 170;
-        }
-        ctx.putImageData(img, 0, 0);
-    }
-
-    function step() {
-        // alternate sweep direction
-        sweep((frame % 2 === 0));
-        frame++;
-
-        // bodies physics: gravity + water interaction
-        collectBodies();
-        for (const b of bodies) {
-            b.vy += 0.5;
-            // water buoyancy/drag: if body's center is in water
-            const cx = Math.floor((b.x + b.w / 2) / CELL);
-            const cy = Math.floor((b.y + b.h / 2) / CELL);
-            if (get(cx, cy) === 1) {
-                b.vy *= 0.82; b.vx *= 0.9; b.vy -= 0.35;   // buoyant drag
-                b.vr *= 0.9;
-            }
-            b.x += b.vx; b.y += b.vy; b.r += b.vr;
-            // floor
-            const floor = innerHeight - b.h;
-            if (b.y > floor) { b.y = floor; b.vy *= -0.3; b.vx *= 0.7; b.vr *= 0.6; }
-            // walls
-            if (b.x < 0) { b.x = 0; b.vx *= -0.4; }
-            if (b.x > innerWidth - b.w) { b.x = innerWidth - b.w; b.vx *= -0.4; }
-            el_apply(b);
-        }
-
-        render();
-    }
-
-    function el_apply(b) {
+    function applyBody(b) {
         b.el.style.left = b.x + "px";
         b.el.style.top = b.y + "px";
         b.el.style.transform = `rotate(${b.r}deg)`;
         b.el._vx = b.vx; b.el._vy = b.vy; b.el._rot = b.r; b.el._vr = b.vr;
     }
 
-    function sweep(leftToRight) {
-        for (let y = rows - 1; y >= 0; y--) {
-            for (let i = 0; i < cols; i++) {
-                const x = leftToRight ? i : cols - 1 - i;
-                const v = grid[idx(x, y)];
-                if (v === 0 || v === 2) continue;
-                const below = get(x, y + 1);
-                if (below === 0) { set(x, y, 0); set(x, y + 1, 1); continue; }
-                const dir = ((y + frame) % 2 === 0) ? 1 : -1;
-                for (const dx of [dir, -dir]) {
-                    if (get(x + dx, y + 1) === 0) { set(x, y, 0); set(x + dx, y + 1, 1); break; }
-                    if (get(x + dx, y) === 0) { set(x, y, 0); set(x + dx, y, 1); break; }
-                }
-            }
-        }
-        // stirring: push water sideways near cursor
-        if (stirring && mx > 0) {
-            const cx = Math.floor(mx / CELL), cy = Math.floor(my / CELL);
-            for (let dy = -3; dy <= 3; dy++) {
-                for (let dx = -3; dx <= 3; dx++) {
-                    if (get(cx + dx, cy + dy) === 1 && get(cx + dx + (dx >= 0 ? 2 : -2), cy + dy) === 0) {
-                        set(cx + dx, cy + dy, 0);
-                        set(cx + dx + (dx >= 0 ? 2 : -2), cy + dy, 1);
-                    }
-                }
-            }
-        }
-        // kick "free" stickers that touch water
-        if (frame % 4 === 0) {
-            collectBodies();
-            for (const b of bodies) {
-                const x0 = Math.floor(b.x / CELL), x1 = Math.floor((b.x + b.w) / CELL);
-                const y0 = Math.floor(b.y / CELL), y1 = Math.floor((b.y + b.h) / CELL);
-                for (let yy = y0; yy <= y1; yy++) {
-                    for (let xx = x0; xx <= x1; xx++) {
-                        if (get(xx, yy) === 1) {
-                            b.vy -= 1.6; b.vx += (Math.random() - 0.5) * 1.6;
-                            b.vr += (Math.random() - 0.5) * 6;
-                            xx = x1 + 1; break;
-                        }
-                    }
-                }
-            }
-        }
+    function cellAt(x, y) {
+        return WaterSim.at(sim, Math.floor(x / CELL), Math.floor(y / CELL));
     }
 
-    /* -------- input -------- */
+    let tick = 0;
 
-    function pos(e) { return [e.clientX, e.clientY]; }
+    function loop() {
+        tick++;
+        if (mode === "drop" && pointerDown && mx >= 0) WaterSim.pour(sim, Math.floor(mx / CELL), Math.floor(my / CELL));
+        if (mode === "stir" && pointerDown && mx >= 0) WaterSim.stir(sim, Math.floor(mx / CELL), Math.floor(my / CELL));
 
+        WaterSim.step(sim);
+
+        // physics bodies (dropped stickers)
+        if (tick % 2 === 0) {
+            collectBodies();
+            for (const b of bodies) {
+                b.inWater = cellAt(b.x + b.w / 2, b.y + b.h / 2) === 1;
+                if (tick % 6 === 0) BodySim.waterKick(b, sim, CELL);
+                BodySim.step(b, { width: W, height: H });
+                applySoakedStyle(b);
+                applyBody(b);
+            }
+        }
+
+        render();
+        requestAnimationFrame(loop);
+    }
+
+    function applySoakedStyle(b) {
+        // mark stickers wet while they sit in water
+        const soaked = cellAt(b.x + b.w / 2, b.y + b.h / 2) === 1;
+        b.el.classList.toggle("st-soaked", soaked);
+    }
+
+    /* input: pour/stir anywhere on the page; drain clears */
     window.addEventListener("pointerdown", (e) => {
-        if (e.target.closest(".water-toolbar")) return;
-        if (e.target.closest(".sticker")) return;      // stickers handle their own drag
-        if (mode === "drop") { pouring = true; [mx, my] = pos(e); }
-        if (mode === "stir") { stirring = true; [mx, my] = pos(e); }
+        if (e.target.closest(".water-toolbar") || e.target.closest(".sticker")) return;
+        if (mode === "drop" || mode === "stir") {
+            pointerDown = true;
+            mx = e.clientX; my = e.clientY;
+        }
     });
-
-    window.addEventListener("pointermove", (e) => {
-        [pmx, pmy] = [mx, my];
-        [mx, my] = pos(e);
-    });
-
+    window.addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; });
     ["pointerup", "pointercancel"].forEach(ev =>
-        window.addEventListener(ev, () => { pouring = false; stirring = false; }));
+        window.addEventListener(ev, () => { pointerDown = false; }));
 
-    // keyboard shortcuts
+    function setMode(m) {
+        if (m === "drain") { sim.grid.fill(0); drainBtn.classList.remove("active"); return; }
+        mode = (mode === m) ? "drop" : m;     // toolbar buttons toggle
+        [dropBtn, stirBtn].forEach(b => b.classList.remove("active"));
+        ({ drop: dropBtn, stir: stirBtn })[mode].classList.add("active");
+        const t = TRANSLATIONS[currentLang] || TRANSLATIONS.de;
+        hint.textContent = mode === "stir" ? t.water_hint + " 🌀" : t.water_hint;
+    }
+
+    dropBtn.addEventListener("click", () => setMode("drop"));
+    stirBtn.addEventListener("click", () => setMode("stir"));
+    drainBtn.addEventListener("click", () => setMode("drain"));
+
     window.addEventListener("keydown", (e) => {
         if (e.target.closest("input, textarea")) return;
         if (e.key === "w" || e.key === "W") setMode("drop");
@@ -382,45 +453,18 @@ function initWater() {
         if (e.key === "d" || e.key === "D") setMode("drain");
     });
 
-    function setMode(m) {
-        mode = m;
-        [dropBtn, stirBtn, drainBtn].forEach(b => b.classList.remove("active"));
-        ({ drop: dropBtn, stir: stirBtn, drain: drainBtn })[m].classList.add("active");
-        if (m !== "drop") hint.textContent = ({ stir: "🌀", drain: "🚱" })[m];
-        else hint.textContent = (currentLang === "en") ? "Water on: hold to pour 💧" : "Wasser an: gedrückt halten zum Gießen 💧";
-    }
-
-    dropBtn.addEventListener("click", () => setMode("drop"));
-    stirBtn.addEventListener("click", () => setMode("stir"));
-    drainBtn.addEventListener("click", () => { grid.fill(0); });
-
     window.addEventListener("resize", resize);
-
-    // main loop
-    let tick = 0;
-    function loop() {
-        tick++;
-        if (mode === "drop" && pouring) {
-            // pour a blob of water at pointer
-            const cx = Math.floor(mx / CELL), cy = Math.floor(my / CELL);
-            for (let dy = -2; dy <= 2; dy++)
-                for (let dx = -2; dx <= 2; dx++)
-                    if (dx * dx + dy * dy <= 4) set(cx + dx, cy + dy, 1);
-        }
-        step();
-        requestAnimationFrame(loop);
-    }
-
     resize();
-    // pre-fill: a little welcoming puddle at the bottom
+
+    // welcoming puddle at the bottom
     for (let x = 0; x < cols; x++) {
-        for (let y = rows - 2; y < rows; y++) set(x, y, 1);
+        WaterSim.set(sim, x, rows - 1, 1);
+        WaterSim.set(sim, x, rows - 2, 1);
     }
-    render();
+
     requestAnimationFrame(loop);
 }
 
-/* current language shared with water hint */
 let currentLang = "de";
 
 window.addEventListener("DOMContentLoaded", () => {
