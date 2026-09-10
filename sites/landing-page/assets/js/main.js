@@ -1,5 +1,5 @@
-/* Daniel Hettich — digital business card
-   i18n (DE first) + theme toggle + flippable card + mini falling-sand game */
+/* Daniel Hettich — punk edition
+   i18n + theme + flippable card + draggable stickers + page-wide water */
 
 /* ================= i18n ================= */
 
@@ -7,44 +7,38 @@ const TRANSLATIONS = {
     de: {
         title: "Daniel Hettich",
         hero_title: "Moin! Ich bin Daniel",
-        hero_sub: "Das hier ist meine digitale Visitenkarte — entspannt, ein bisschen pixelig, ehrlich.",
-        card_role: "Zuhause-Laborant · Tüftler · Sandkasten-Architekt",
+        hero_sub: "Digitale Visitenkarte. Handgemacht, ein bisschen chaos, von unten links.",
+        card_role: "Zuhause-Laborant · Tüftler · Sandkasten-Rebell",
         card_hint: "⟲ Klick für die Rückseite",
         card_back_title: "Lass uns quatschen!",
         copy: "kopieren",
         copied: "clipboard ✓",
         interests_title: "Zeug, das ich mag",
-        sandbox_title: "Mini-Sandkasten",
-        sandbox_hint: "Malen mit Physik: Sand rieselt, Wasser fließt, Samen wachsen, wenn sie nass werden.",
-        mat_sand: "Sand",
-        mat_water: "Wasser",
-        mat_wall: "Wand",
-        mat_seed: "Samen",
-        mat_erase: "Radierer",
-        mat_reset: "Leeren",
+        sticker_hint: "Sticker: ziehen zum Umsortieren, Doppelklick zum Drehen. Gieß sie nass!",
         contact_title: "Kontakt",
-        contact_hint: "Schreib mir einfach — ich freu mich über Post von Menschen."
+        contact_hint: "Schreib mir einfach — ich freu mich über Post von Menschen.",
+        water_hint: "Wasser an: gedrückt halten zum Gießen 💧",
+        wt_drop: "Wasser gießen (W)",
+        wt_stir: "Rühren (R)",
+        wt_drain: "Abfließen lassen (D)"
     },
     en: {
         title: "Daniel Hettich",
         hero_title: "Hi! I'm Daniel",
-        hero_sub: "This is my digital business card — relaxed, a bit pixelated, honest.",
-        card_role: "Home-lab tinkerer · maker · sandbox architect",
+        hero_sub: "Digital business card. Handmade, slightly chaotic, bottom-left aligned.",
+        card_role: "Home-lab tinkerer · maker · sandbox rebel",
         card_hint: "⟲ Click to flip",
         card_back_title: "Let's chat!",
         copy: "copy",
         copied: "clipboard ✓",
         interests_title: "Things I like",
-        sandbox_title: "Mini sandbox",
-        sandbox_hint: "Paint with physics: sand falls, water flows, seeds grow when watered.",
-        mat_sand: "Sand",
-        mat_water: "Water",
-        mat_wall: "Wall",
-        mat_seed: "Seed",
-        mat_erase: "Erase",
-        mat_reset: "Clear",
+        sticker_hint: "Stickers: drag to rearrange, double-click to spin. Water them!",
         contact_title: "Contact",
-        contact_hint: "Drop me a line — I love hearing from people."
+        contact_hint: "Drop me a line — I love hearing from people.",
+        water_hint: "Water on: hold to pour 💧",
+        wt_drop: "Pour water (W)",
+        wt_stir: "Stir (R)",
+        wt_drain: "Drain (D)"
     }
 };
 
@@ -65,6 +59,10 @@ function initLang() {
         document.querySelectorAll("[data-i18n]").forEach(el => {
             const key = el.dataset.i18n;
             if (t[key]) el.textContent = t[key];
+        });
+        document.querySelectorAll("[data-i18n-title]").forEach(el => {
+            const key = el.dataset.i18nTitle;
+            if (t[key]) el.title = t[key];
         });
 
         const email = CONTACT[lang] || CONTACT.de;
@@ -115,7 +113,7 @@ function initCard() {
     const feedback = document.getElementById("copy-feedback");
 
     card.addEventListener("click", (e) => {
-        if (copyBtn.contains(e.target)) return;          // don't flip when copying
+        if (copyBtn.contains(e.target)) return;
         const flipped = card.classList.toggle("flipped");
         card.setAttribute("aria-pressed", String(flipped));
     });
@@ -142,157 +140,294 @@ function initCard() {
     });
 }
 
-/* ================= mini falling-sand sandbox =================
-   Grid: 0 empty, 1 sand, 2 water, 3 wall, 4 seed.
-   Sand sinks through water, water flows sideways, seeds grow
-   upwards when touching water, walls are static.
-   Rendering into ImageData, upscaled by CSS (image-rendering: pixelated).
-=============================================================== */
+/* ================= stickers: drag + dblclick spin ================= */
 
-function initSandbox() {
-    const canvas = document.getElementById("sandbox");
+function initStickers() {
+    const stickers = document.querySelectorAll(".sticker");
+
+    stickers.forEach(sticker => {
+        // natural resting rotation from CSS class is overridden inline when dragged
+        let rot = 0;
+        sticker.addEventListener("dblclick", () => {
+            rot += (Math.random() < 0.5 ? -22 : 22);
+            sticker.style.transform = `rotate(${rot}deg)`;
+        });
+
+        sticker.addEventListener("pointerdown", (e) => {
+            // ignore drags starting on links inside stickers (none yet, but safe)
+            if (e.button !== 0 && e.pointerType === "mouse") return;
+            e.preventDefault();
+            const board = sticker.parentElement;
+            const boardRect = board.getBoundingClientRect();
+            const rect = sticker.getBoundingClientRect();
+
+            // switch from static flow to fixed positioning at current spot
+            const startX = e.clientX, startY = e.clientY;
+            const origLeft = rect.left, origTop = rect.top;
+            let curX = origLeft, curY = origTop;
+
+            // remember the slot so cancel can restore layout
+            sticker.classList.add("dragging");
+
+            function move(ev) {
+                curX = origLeft + (ev.clientX - startX);
+                curY = origTop + (ev.clientY - startY);
+                sticker.classList.add("free");
+                sticker.style.left = curX + "px";
+                sticker.style.top = curY + "px";
+                sticker.style.transform = `rotate(${rot}deg) scale(1.08)`;
+            }
+
+            function up() {
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up);
+                window.removeEventListener("pointercancel", up);
+                sticker.classList.remove("dragging");
+                // decide: back into flow (if near board) or stay free-floating
+                const r = sticker.getBoundingClientRect();
+                const b = board.getBoundingClientRect();
+                const nearBoard = r.top < b.bottom + 80 && r.bottom > b.top - 120;
+                if (nearBoard) {
+                    sticker.classList.remove("free");
+                    sticker.style.left = sticker.style.top = "";
+                    sticker.style.transform = "";   // CSS class rotation takes over
+                    rot = 0;
+                } else {
+                    // keep floating at dropped position (fixed)
+                    sticker.style.transform = `rotate(${rot}deg)`;
+                }
+            }
+
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
+            window.addEventListener("pointercancel", up);
+        });
+    });
+}
+
+/* ================= page-wide water =================
+   Cellular water on a coarse grid spanning the whole viewport.
+   - canvas is fixed, pointer-events none, z-index above content
+   - pouring: hold mouse/touch anywhere (when tool = drop)
+   - stickers are read as rects; water kicks them (impulse) on contact
+   - free (dropped) stickers fall & tumble like physics objects
+==================================================== */
+
+function initWater() {
+    const canvas = document.getElementById("water-canvas");
     const ctx = canvas.getContext("2d");
-    const W = canvas.width, H = canvas.height;
+    const CELL = 7;                      // px per cell
+    let W, H, cols, rows, grid, img, px, dpr;
 
-    let grid = new Uint8Array(W * H);
-    let currentMat = 1;
-    let painting = false;
-    let lastX = -1, lastY = -1;
-    let tick = 0;
+    const dropBtn = document.getElementById("wt-drop");
+    const stirBtn = document.getElementById("wt-stir");
+    const drainBtn = document.getElementById("wt-drain");
+    const hint = document.getElementById("water-hint");
 
-    // materials & their colours (same palette as the page)
-    const COLORS = {
-        1: [224, 178, 106],   // sand
-        2: [86, 134, 214],    // water
-        3: [90, 90, 110],     // wall
-        4: [104, 192, 122]    // seed
-    };
+    let mode = "drop";                   // drop | stir | drain
+    let pouring = false, stirring = false;
+    let mx = -1, my = -1, frame = 0;
 
-    const idx = (x, y) => y * W + x;
-    const get = (x, y) => (x < 0 || x >= W || y < 0 || y >= H) ? 3 : grid[idx(x, y)];
-    const set = (x, y, v) => { if (x >= 0 && x < W && y >= 0 && y < H) grid[idx(x, y)] = v; };
+    // draggable "free" stickers + their physics
+    const bodies = [];                   // {el, x, y, vx, vy, w, h, r}
 
-    const img = ctx.createImageData(W, H);
-    const px = img.data;
+    function resize() {
+        dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.floor(innerWidth * dpr / CELL) * CELL;
+        canvas.height = Math.floor(innerHeight * dpr / CELL) * CELL;
+        cols = canvas.width / CELL;
+        rows = canvas.height / CELL;
+        grid = new Uint8Array(cols * rows);
+        img = ctx.createImageData(cols, rows);
+        px = img.data;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        canvas.style.width = innerWidth + "px";
+        canvas.style.height = innerHeight + "px";
+        ctx.scale(dpr, dpr);
+    }
+
+    function collectBodies() {
+        bodies.length = 0;
+        document.querySelectorAll(".sticker.free").forEach(el => {
+            const r = el.getBoundingClientRect();
+            bodies.push({
+                el, x: r.left, y: r.top, w: r.width, h: r.height,
+                vx: el._vx || 0, vy: el._vy || 0, r: el._rot || 0,
+                vr: el._vr || 0
+            });
+        });
+    }
+
+    function idx(x, y) { return y * cols + x; }
+    function get(x, y) { return (x < 0 || x >= cols || y < 0 || y >= rows) ? 1 : grid[idx(x, y)]; }
+    function set(x, y, v) { if (x >= 0 && x < cols && y >= 0 && y < rows) grid[idx(x, y)] = v; }
 
     function render() {
-        for (let i = 0; i < W * H; i++) {
+        for (let i = 0; i < cols * rows; i++) {
             const v = grid[i];
-            const [r, g, b] = COLORS[v] || [0, 0, 0];
             const o = i * 4;
-            px[o] = r; px[o + 1] = g; px[o + 2] = b; px[o + 3] = v === 0 ? 0 : 255;
+            if (v === 0) { px[o + 3] = 0; continue; }
+            px[o] = 86; px[o + 1] = 134; px[o + 2] = 214;
+            px[o + 3] = 170;
         }
         ctx.putImageData(img, 0, 0);
     }
 
-    function paintLine(x0, y0, x1, y1) {
-        const dx = x1 - x0, dy = y1 - y0;
-        const steps = Math.max(Math.abs(dx), Math.abs(dy)) || 1;
-        for (let s = 0; s <= steps; s++) {
-            paintBrush(Math.round(x0 + dx * s / steps), Math.round(y0 + dy * s / steps));
+    function step() {
+        // alternate sweep direction
+        sweep((frame % 2 === 0));
+        frame++;
+
+        // bodies physics: gravity + water interaction
+        collectBodies();
+        for (const b of bodies) {
+            b.vy += 0.5;
+            // water buoyancy/drag: if body's center is in water
+            const cx = Math.floor((b.x + b.w / 2) / CELL);
+            const cy = Math.floor((b.y + b.h / 2) / CELL);
+            if (get(cx, cy) === 1) {
+                b.vy *= 0.82; b.vx *= 0.9; b.vy -= 0.35;   // buoyant drag
+                b.vr *= 0.9;
+            }
+            b.x += b.vx; b.y += b.vy; b.r += b.vr;
+            // floor
+            const floor = innerHeight - b.h;
+            if (b.y > floor) { b.y = floor; b.vy *= -0.3; b.vx *= 0.7; b.vr *= 0.6; }
+            // walls
+            if (b.x < 0) { b.x = 0; b.vx *= -0.4; }
+            if (b.x > innerWidth - b.w) { b.x = innerWidth - b.w; b.vx *= -0.4; }
+            el_apply(b);
         }
+
+        render();
     }
 
-    function paintBrush(cx, cy) {
-        for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                if (dx * dx + dy * dy <= 2) set(cx + dx, cy + dy, currentMat);
+    function el_apply(b) {
+        b.el.style.left = b.x + "px";
+        b.el.style.top = b.y + "px";
+        b.el.style.transform = `rotate(${b.r}deg)`;
+        b.el._vx = b.vx; b.el._vy = b.vy; b.el._rot = b.r; b.el._vr = b.vr;
+    }
+
+    function sweep(leftToRight) {
+        for (let y = rows - 1; y >= 0; y--) {
+            for (let i = 0; i < cols; i++) {
+                const x = leftToRight ? i : cols - 1 - i;
+                const v = grid[idx(x, y)];
+                if (v === 0 || v === 2) continue;
+                const below = get(x, y + 1);
+                if (below === 0) { set(x, y, 0); set(x, y + 1, 1); continue; }
+                const dir = ((y + frame) % 2 === 0) ? 1 : -1;
+                for (const dx of [dir, -dir]) {
+                    if (get(x + dx, y + 1) === 0) { set(x, y, 0); set(x + dx, y + 1, 1); break; }
+                    if (get(x + dx, y) === 0) { set(x, y, 0); set(x + dx, y, 1); break; }
+                }
             }
         }
-    }
-
-    function canvasPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        return [
-            Math.floor((e.clientX - rect.left) / rect.width * W),
-            Math.floor((e.clientY - rect.top) / rect.height * H)
-        ];
-    }
-
-    canvas.addEventListener("pointerdown", (e) => {
-        painting = true;
-        [lastX, lastY] = canvasPos(e);
-        paintBrush(lastX, lastY);
-        canvas.setPointerCapture(e.pointerId);
-    });
-
-    canvas.addEventListener("pointermove", (e) => {
-        if (!painting) return;
-        const [x, y] = canvasPos(e);
-        paintLine(lastX, lastY, x, y);
-        lastX = x; lastY = y;
-    });
-
-    ["pointerup", "pointercancel", "pointerleave"].forEach(ev =>
-        canvas.addEventListener(ev, () => { painting = false; lastX = -1; lastY = -1; }));
-
-    document.querySelectorAll(".tool").forEach(btn => {
-        if (btn.id === "sandbox-reset") return;
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".tool").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            currentMat = parseInt(btn.dataset.mat, 10);
-        });
-    });
-
-    document.getElementById("sandbox-reset").addEventListener("click", () => {
-        grid.fill(0);
-        render();
-    });
-
-    function step() {
-        tick++;
-        // bottom-up sweep, alternate direction to avoid drift artifacts
-        for (let y = H - 1; y >= 0; y--) {
-            const leftToRight = (y + tick) % 2 === 0;
-            for (let i = 0; i < W; i++) {
-                const x = leftToRight ? i : W - 1 - i;
-                const v = grid[idx(x, y)];
-                if (v === 0 || v === 3) continue;
-
-                if (v === 1) { // sand
-                    if (get(x, y + 1) === 0 || get(x, y + 1) === 2) {
-                        set(x, y, get(x, y + 1)); set(x, y + 1, 1);
-                        continue;
-                    }
-                    const dir = ((tick + y) % 2 === 0) ? 1 : -1;
-                    for (const dx of [dir, -dir]) {
-                        if (get(x + dx, y + 1) === 0) { set(x, y, 0); set(x + dx, y + 1, 1); break; }
-                        if (get(x + dx, y + 1) === 2) { set(x, y, 2); set(x + dx, y + 1, 1); break; }
-                    }
-                } else if (v === 2) { // water
-                    if (get(x, y + 1) === 0) { set(x, y, 0); set(x, y + 1, 2); continue; }
-                    const dir = ((tick + y) % 2 === 0) ? 1 : -1;
-                    for (const dx of [dir, -dir]) {
-                        if (get(x + dx, y) === 0) { set(x, y, 0); set(x + dx, y, 2); break; }
-                    }
-                } else if (v === 4) { // seed: grows up when watered
-                    const waterNear = get(x, y + 1) === 2 || get(x - 1, y) === 2 ||
-                                      get(x + 1, y) === 2 || get(x, y - 1) === 2;
-                    if (waterNear && tick % 12 === 0 && get(x, y - 1) === 0) {
-                        set(x, y - 1, 4);
-                        // consume a bit of the water
-                        if (get(x, y + 1) === 2) set(x, y + 1, 0);
+        // stirring: push water sideways near cursor
+        if (stirring && mx > 0) {
+            const cx = Math.floor(mx / CELL), cy = Math.floor(my / CELL);
+            for (let dy = -3; dy <= 3; dy++) {
+                for (let dx = -3; dx <= 3; dx++) {
+                    if (get(cx + dx, cy + dy) === 1 && get(cx + dx + (dx >= 0 ? 2 : -2), cy + dy) === 0) {
+                        set(cx + dx, cy + dy, 0);
+                        set(cx + dx + (dx >= 0 ? 2 : -2), cy + dy, 1);
                     }
                 }
             }
         }
-        render();
+        // kick "free" stickers that touch water
+        if (frame % 4 === 0) {
+            collectBodies();
+            for (const b of bodies) {
+                const x0 = Math.floor(b.x / CELL), x1 = Math.floor((b.x + b.w) / CELL);
+                const y0 = Math.floor(b.y / CELL), y1 = Math.floor((b.y + b.h) / CELL);
+                for (let yy = y0; yy <= y1; yy++) {
+                    for (let xx = x0; xx <= x1; xx++) {
+                        if (get(xx, yy) === 1) {
+                            b.vy -= 1.6; b.vx += (Math.random() - 0.5) * 1.6;
+                            b.vr += (Math.random() - 0.5) * 6;
+                            xx = x1 + 1; break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    // initial scene: a little sand pile + water pocket
-    for (let x = 20; x < 60; x++) set(x, 30, 3);
-    for (let x = 100; x < 140; x++) for (let y = 20; y < 30; y++) set(x, y, 2);
-    for (let x = 60; x < 100; x++) set(x, 12, 4);
-    set(40, 29, 4); set(41, 29, 4);
+    /* -------- input -------- */
 
+    function pos(e) { return [e.clientX, e.clientY]; }
+
+    window.addEventListener("pointerdown", (e) => {
+        if (e.target.closest(".water-toolbar")) return;
+        if (e.target.closest(".sticker")) return;      // stickers handle their own drag
+        if (mode === "drop") { pouring = true; [mx, my] = pos(e); }
+        if (mode === "stir") { stirring = true; [mx, my] = pos(e); }
+    });
+
+    window.addEventListener("pointermove", (e) => {
+        [pmx, pmy] = [mx, my];
+        [mx, my] = pos(e);
+    });
+
+    ["pointerup", "pointercancel"].forEach(ev =>
+        window.addEventListener(ev, () => { pouring = false; stirring = false; }));
+
+    // keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+        if (e.target.closest("input, textarea")) return;
+        if (e.key === "w" || e.key === "W") setMode("drop");
+        if (e.key === "r" || e.key === "R") setMode("stir");
+        if (e.key === "d" || e.key === "D") setMode("drain");
+    });
+
+    function setMode(m) {
+        mode = m;
+        [dropBtn, stirBtn, drainBtn].forEach(b => b.classList.remove("active"));
+        ({ drop: dropBtn, stir: stirBtn, drain: drainBtn })[m].classList.add("active");
+        if (m !== "drop") hint.textContent = ({ stir: "🌀", drain: "🚱" })[m];
+        else hint.textContent = (currentLang === "en") ? "Water on: hold to pour 💧" : "Wasser an: gedrückt halten zum Gießen 💧";
+    }
+
+    dropBtn.addEventListener("click", () => setMode("drop"));
+    stirBtn.addEventListener("click", () => setMode("stir"));
+    drainBtn.addEventListener("click", () => { grid.fill(0); });
+
+    window.addEventListener("resize", resize);
+
+    // main loop
+    let tick = 0;
+    function loop() {
+        tick++;
+        if (mode === "drop" && pouring) {
+            // pour a blob of water at pointer
+            const cx = Math.floor(mx / CELL), cy = Math.floor(my / CELL);
+            for (let dy = -2; dy <= 2; dy++)
+                for (let dx = -2; dx <= 2; dx++)
+                    if (dx * dx + dy * dy <= 4) set(cx + dx, cy + dy, 1);
+        }
+        step();
+        requestAnimationFrame(loop);
+    }
+
+    resize();
+    // pre-fill: a little welcoming puddle at the bottom
+    for (let x = 0; x < cols; x++) {
+        for (let y = rows - 2; y < rows; y++) set(x, y, 1);
+    }
     render();
-    setInterval(step, 50);
+    requestAnimationFrame(loop);
 }
+
+/* current language shared with water hint */
+let currentLang = "de";
 
 window.addEventListener("DOMContentLoaded", () => {
     initLang();
+    currentLang = localStorage.getItem("pref-lang") || "de";
     initTheme();
     initCard();
-    initSandbox();
+    initStickers();
+    initWater();
 });

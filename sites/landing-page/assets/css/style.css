@@ -1,21 +1,22 @@
-/* ============ 8-bit business card — soft retro mix ============ */
+/* ============ 8-bit business card — punk edition ============ */
 
 :root {
-    --bg-color: #1a1c2c;          /* deep retro navy */
+    --bg-color: #1a1c2c;
     --bg-pattern: #23253a;
     --container-bg: #29304a;
     --card-bg: #3b4252;
     --text-color: #e8e6d8;
     --text-muted: #a8a8b8;
     --border-color: #414866;
-    --highlight: #68c07a;         /* pixel green */
-    --accent: #e8b166;            /* warm amber */
-    --accent-2: #d16969;          /* soft red */
+    --highlight: #68c07a;
+    --accent: #e8b166;
+    --accent-2: #d16969;
+    --accent-3: #b46ad4;
     --sky: #87ceeb;
 }
 
 [data-theme="light"] {
-    --bg-color: #f2ead8;          /* warm paper */
+    --bg-color: #f2ead8;
     --bg-pattern: #e8dfc8;
     --container-bg: #fffdf4;
     --card-bg: #fdf6e3;
@@ -25,6 +26,7 @@
     --highlight: #2e7d32;
     --accent: #b8860b;
     --accent-2: #b05050;
+    --accent-3: #7d3fa3;
     --sky: #a8d8f0;
 }
 
@@ -33,7 +35,7 @@ body::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: -2;
     background-image:
         linear-gradient(var(--bg-pattern) 1px, transparent 1px),
         linear-gradient(90deg, var(--bg-pattern) 1px, transparent 1px);
@@ -52,25 +54,20 @@ body {
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
     line-height: 1.55;
-}
-
-/* ---------- pixel frame helper ---------- */
-.pixel-border {
-    border: 3px solid var(--border-color);
-    box-shadow:
-        0 -3px 0 0 var(--border-color),
-        0 3px 0 0 var(--border-color),
-        -3px 0 0 0 var(--border-color),
-        3px 0 0 0 var(--border-color);
+    overflow-x: hidden;
 }
 
 .container {
     width: min(560px, 92vw);
     text-align: center;
     padding: 2.5rem 1.5rem 1rem;
+    position: relative;
+    z-index: 3;
 }
 
 /* ---------- hero ---------- */
+.hero { position: relative; }
+
 .hero h1 {
     color: var(--highlight);
     margin-bottom: 0.5rem;
@@ -87,12 +84,24 @@ body {
 
 @keyframes blink { 50% { opacity: 0; } }
 
-.tagline {
-    color: var(--text-muted);
-    font-size: 1.02rem;
+.tagline { color: var(--text-muted); font-size: 1.02rem; }
+
+/* sprayed section headings */
+.spray {
+    display: inline-block;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 2.2rem 0 0.9rem;
+    color: var(--text-color);
+    transform: rotate(-1.5deg);
+    padding: 0.15rem 0.7rem;
+    border: 2px dashed var(--accent-2);
+    border-radius: 3px;
+    box-shadow: 2px 2px 0 var(--accent-2);
 }
 
-/* ---------- business card (flippable) ---------- */
+/* ---------- business card ---------- */
 .business-card {
     display: block;
     width: min(340px, 88vw);
@@ -143,21 +152,24 @@ body {
 
 .business-card:not(.flipped):hover .card-front { transform: translateY(-4px) rotate(-1deg); }
 .card-front { transition: transform 0.2s; }
-
 .card-back { transform: rotateY(180deg); }
 
 .avatar { image-rendering: pixelated; }
 
-.card-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+/* anarchy "A" sticker slapped onto the card */
+.card-anarchy {
+    position: absolute;
+    top: -14px;
+    right: -12px;
+    font-size: 1.4rem;
+    transform: rotate(14deg);
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+    z-index: 2;
+    pointer-events: none;
 }
 
-.card-role {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
+.card-name { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.03em; }
+.card-role { color: var(--text-muted); font-size: 0.85rem; }
 
 .card-hint {
     color: var(--accent);
@@ -166,11 +178,7 @@ body {
     opacity: 0.9;
 }
 
-.card-back-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--highlight);
-}
+.card-back-title { font-size: 1.15rem; font-weight: 700; color: var(--highlight); }
 
 .email-row {
     display: flex;
@@ -220,80 +228,75 @@ body {
 
 .gh-link:hover { color: var(--accent); }
 
-/* ---------- interests ---------- */
-.interests h2, .sandbox-section h2, .contact h2 {
-    font-size: 1.1rem;
-    letter-spacing: 0.04em;
-    color: var(--accent);
-    margin: 2.2rem 0 0.9rem;
-    text-transform: uppercase;
-}
-
-.chips {
+/* ---------- sticker board (draggable) ---------- */
+.sticker-board {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: 0.7rem;
     justify-content: center;
+    min-height: 3rem;
+    padding: 0.5rem 0;
 }
 
-.chip {
-    padding: 0.4rem 0.85rem;
-    border: 2px solid var(--border-color);
-    border-radius: 999px;
-    font-size: 0.9rem;
+.sticker {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border-radius: 3px;
+    font-size: 0.92rem;
     background: var(--card-bg);
-    transition: transform 0.15s, border-color 0.15s;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+    cursor: grab;
     user-select: none;
-}
-
-.chip:hover {
-    transform: translateY(-3px) scale(1.06);
-    border-color: var(--highlight);
-}
-
-/* ---------- sandbox ---------- */
-.sandbox-hint {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    margin-bottom: 0.9rem;
-}
-
-.tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    justify-content: center;
-    margin-bottom: 0.9rem;
-}
-
-.tool {
-    font-family: inherit;
-    font-size: 0.82rem;
-    padding: 0.4rem 0.8rem;
-    background: var(--card-bg);
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.1s, border-color 0.1s;
-}
-
-.tool:hover { border-color: var(--accent); }
-.tool.active { border-color: var(--highlight); box-shadow: 0 0 0 1px var(--highlight); }
-.tool:active { transform: translateY(2px); }
-
-.tool-reset { border-color: var(--accent-2); color: var(--accent-2); }
-
-#sandbox {
-    width: 100%;
-    max-width: 480px;
-    aspect-ratio: 8 / 5;
-    image-rendering: pixelated;
-    border: 3px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--sky);
-    cursor: crosshair;
     touch-action: none;
+    transition: transform 0.12s, box-shadow 0.1s;
+    position: relative;
+}
+
+.sticker::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    width: 34px;
+    height: 12px;
+    margin-left: -17px;
+    background: rgba(232,177,102,0.5);
+    transform: rotate(-4deg);
+    border-left: 1px dashed rgba(255,255,255,0.4);
+    border-right: 1px dashed rgba(255,255,255,0.4);
+}
+
+.sticker:hover { box-shadow: 0 5px 0 rgba(0,0,0,0.25); }
+
+.sticker.dragging {
+    cursor: grabbing;
+    z-index: 60;
+    transition: none;
+    box-shadow: 0 8px 14px rgba(0,0,0,0.35);
+    scale: 1.08;
+}
+
+.sticker.st-soaked {
+    border-color: #5686d6;
+    color: #9db8e8;
+    text-shadow: 0 1px 2px rgba(0,0,60,0.4);
+}
+
+.sticker-linux    { transform: rotate(-3deg); }
+.sticker-oss      { transform: rotate(2deg); }
+.sticker-it       { transform: rotate(-1deg); }
+.sticker-diy      { transform: rotate(3deg); }
+.sticker-gaming   { transform: rotate(-2deg); }
+.sticker-sandbox  { transform: rotate(2.5deg); }
+.sticker-punk     { background: var(--accent-2); color: #fff; transform: rotate(-4deg); border-color: var(--accent-2); }
+.sticker-libre    { background: var(--highlight); color: #10241a; transform: rotate(2deg); border-color: var(--highlight); }
+.sticker-soli     { background: var(--accent-3); color: #fff; transform: rotate(-2deg); border-color: var(--accent-3); }
+
+.sticker-hint {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.6rem;
 }
 
 /* ---------- contact ---------- */
@@ -316,6 +319,27 @@ body {
 
 .contact-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
 .contact-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
+
+/* ---------- footer ---------- */
+footer {
+    text-align: center;
+    padding: 1.5rem 1rem 2rem;
+    opacity: 0.85;
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 3;
+}
+
+.footer-punk {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent-2);
+    margin-bottom: 0.4rem;
+    transform: rotate(-1deg);
+}
+
+footer a { color: inherit; }
 
 /* ---------- switches & badge ---------- */
 .top-switches {
@@ -364,14 +388,66 @@ body {
 
 .ai-note:hover { opacity: 0.85; }
 
-footer {
-    text-align: center;
-    padding: 1.5rem 1rem 2rem;
-    opacity: 0.7;
-    font-size: 0.85rem;
+/* ---------- water layer & tools ---------- */
+#water-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 50;
+    pointer-events: none;
 }
 
-footer a { color: inherit; }
+.water-toolbar {
+    position: fixed;
+    bottom: 0.9rem;
+    right: 0.9rem;
+    z-index: 210;
+    display: flex;
+    gap: 0.4rem;
+    background: var(--container-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.35rem;
+}
+
+.wt-btn {
+    font-size: 1.05rem;
+    padding: 0.3rem 0.55rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.wt-btn.active { border-color: var(--highlight); box-shadow: 0 0 0 1px var(--highlight); }
+.wt-btn:hover { border-color: var(--accent); }
+
+.water-hint {
+    position: fixed;
+    bottom: 0.9rem;
+    left: 0.9rem;
+    z-index: 210;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    background: color-mix(in srgb, var(--container-bg) 82%, transparent);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    pointer-events: none;
+    transition: opacity 0.6s;
+}
+
+.water-hint.faded { opacity: 0; }
+
+/* falling stickers get their own layer while tumbling */
+.sticker.free {
+    position: fixed;
+    z-index: 70;
+    margin: 0;
+    pointer-events: none;
+    transition: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .cursor { animation: none; }
