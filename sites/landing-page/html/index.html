@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daniel Hettich</title>
-    <meta name="description" content="Daniel Hettich — digitale Visitenkarte. Tüftler, Linux-Fan, Sandkasten-Architekt.">
+    <meta name="description" content="Daniel Hettich — digitale Visitenkarte. Tüftler, Linux-Fan, Sandkasten-Rebell.">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-theme="dark">
@@ -20,7 +20,7 @@
     <main class="container">
         <header class="hero">
             <h1><span data-i18n="hero_title">Moin! Ich bin Daniel</span><span class="cursor" aria-hidden="true">█</span></h1>
-            <p class="tagline" data-i18n="hero_sub">Das hier ist meine digitale Visitenkarte — entspannt, ein bisschen pixelig, ehrlich.</p>
+            <p class="tagline" data-i18n="hero_sub">Digitale Visitenkarte. Handgemacht, ein bisschen chaos, von unten links.</p>
         </header>
 
         <button class="business-card" id="business-card" type="button" aria-pressed="false" title="Klick mich!">
@@ -34,11 +34,12 @@
                         <rect x="2" y="2" width="1" height="1" fill="#222"/>
                         <rect x="5" y="2" width="1" height="1" fill="#222"/>
                         <rect x="3" y="4" width="2" height="1" fill="#c97b5a"/>
-                        <rect x="1" y="6" width="6" height="2" fill="#3d7a4f"/>
+                        <rect x="1" y="6" width="6" height="2" fill="#333"/>
                         <rect x="3" y="6" width="2" height="1" fill="#e8b166"/>
+                        <rect x="4" y="7" width="1" height="1" fill="#d16969"/>
                     </svg>
                     <span class="card-name">Daniel Hettich</span>
-                    <span class="card-role" data-i18n="card_role">Zuhause-Laborant · Tüftler · Sandkasten-Architekt</span>
+                    <span class="card-role" data-i18n="card_role">Zuhause-Laborant · Tüftler · Sandkasten-Rebell</span>
                     <span class="card-hint" data-i18n="card_hint">⟲ Klick für die Rückseite</span>
                 </span>
                 <span class="card-face card-back">
@@ -54,41 +55,40 @@
         </button>
 
         <section class="interests" aria-label="Interessen">
-            <h2 data-i18n="interests_title">Zeug, das ich mag</h2>
-            <div class="chips">
-                <span class="chip" title="Linux">🐧 Linux</span>
-                <span class="chip" title="Open Source">🧡 Open Source</span>
-                <span class="chip" title="IT">💻 IT</span>
-                <span class="chip" title="DIY">🛠️ DIY</span>
-                <span class="chip" title="Gaming">🎮 Gaming</span>
-                <span class="chip" title="Sandbox Games">🏖️ Sandbox-Sims</span>
+            <h2 class="spray" data-i18n="interests_title">Zeug, das ich mag</h2>
+            <div class="sticker-board" id="sticker-board">
+                <span class="sticker sticker-linux"    data-word="Linux">🐧 Linux</span>
+                <span class="sticker sticker-oss"      data-word="Open Source">🧡 Open Source</span>
+                <span class="sticker sticker-it"       data-word="IT">💻 IT</span>
+                <span class="sticker sticker-diy"      data-word="DIY">🛠️ DIY</span>
+                <span class="sticker sticker-gaming"   data-word="Gaming">🎮 Gaming</span>
+                <span class="sticker sticker-sandbox"  data-word="Sandbox">🏖️ Sandbox</span>
+                <span class="sticker sticker-punk"     data-word="Do it yourself">✊ DIY-Ethik</span>
+                <span class="sticker sticker-libre"    data-word="Freie Software"> libre Software</span>
+                <span class="sticker sticker-soli"     data-word="Solidarität">✊ Solidarität</span>
             </div>
-        </section>
-
-        <section class="sandbox-section">
-            <h2 data-i18n="sandbox_title">Mini-Sandkasten</h2>
-            <p class="sandbox-hint" data-i18n="sandbox_hint">Malen mit Physik: Sand rieselt, Wasser fließt, Samen wachsen, wenn sie nass werden.</p>
-            <div class="tools" role="toolbar" aria-label="Sandkasten-Werkzeuge">
-                <button class="tool active" data-mat="1" data-i18n="mat_sand">Sand</button>
-                <button class="tool" data-mat="2" data-i18n="mat_water">Wasser</button>
-                <button class="tool" data-mat="3" data-i18n="mat_wall">Wand</button>
-                <button class="tool" data-mat="4" data-i18n="mat_seed">Samen</button>
-                <button class="tool tool-erase" data-mat="0" data-i18n="mat_erase">Radierer</button>
-                <button class="tool tool-reset" id="sandbox-reset" data-i18n="mat_reset">Leeren</button>
-            </div>
-            <canvas id="sandbox" width="160" height="100" aria-label="Interaktiver Sandkasten"></canvas>
+            <p class="sticker-hint" data-i18n="sticker_hint">Sticker: ziehen zum Umsortieren, Doppelklick zum Drehen. Gieß sie nass!</p>
         </section>
 
         <section class="contact">
-            <h2 data-i18n="contact_title">Kontakt</h2>
+            <h2 class="spray" data-i18n="contact_title">Kontakt</h2>
             <p data-i18n="contact_hint">Schreib mir einfach — ich freu mich über Post von Menschen.</p>
             <a class="contact-btn" id="contact-mail" href="mailto:kontakt@daniel-hettich.de">✉ kontakt@daniel-hettich.de</a>
         </section>
     </main>
 
     <footer>
+        <span class="footer-punk">no gods no masters —</span>
         <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
     </footer>
+
+    <div class="water-toolbar" id="water-toolbar">
+        <button class="wt-btn active" id="wt-drop" data-i18n-title="wt_drop" title="Wasser gießen (W)">💧</button>
+        <button class="wt-btn" id="wt-stir" data-i18n-title="wt_stir" title="Rühren (R)">🌀</button>
+        <button class="wt-btn" id="wt-drain" data-i18n-title="wt_drain" title="Abfließen lassen (D)">🚱</button>
+    </div>
+    <div class="water-hint" id="water-hint" data-i18n="water_hint">Wasser an: gedrückt halten zum Gießen 💧</div>
+    <canvas id="water-canvas" aria-hidden="true"></canvas>
     <script src="/assets/js/main.js"></script>
 </body>
 </html>
