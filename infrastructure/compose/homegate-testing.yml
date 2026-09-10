@@ -7,6 +7,11 @@
 #
 # Usage (paths in override files resolve against the first compose file's dir):
 #   docker compose -f docker-compose.yml -f infrastructure/compose/homegate-testing.yml up -d --build
+#
+# This environment is intentionally HTTP-only: the site is never published
+# from here before it is tested and verified. For plain-HTTP work, the
+# landing-page container is also exposed directly on 6012 (bypassing the
+# proxy's 301-redirect-to-https on port 80).
 
 services:
   proxy:
@@ -37,3 +42,9 @@ services:
     networks:
       - web-network
     restart: always
+
+  # HTTP-only workflow: direct access to the landing page, bypassing the
+  # proxy (which 301-redirects port 80 traffic to https per production conf).
+  landing-page:
+    ports: !override
+      - "6012:8080"
