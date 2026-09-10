@@ -1,26 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daniel Hettich</title>
+    <meta name="description" content="Daniel Hettich — digitale Visitenkarte. Tüftler, Linux-Fan, Sandkasten-Architekt.">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-theme="dark">
     <a class="ai-note" href="/impressum" title="Diese Seite wurde mit Unterstützung von KI erstellt" aria-label="Hinweis: Diese Seite wurde mit Unterstützung von KI erstellt. Zum Impressum.">✳ Mit KI erstellt</a>
-    <div class="theme-switch">
+    <div class="top-switches">
+        <div class="lang-switch">
+            <button class="lang-btn" data-lang="de" title="Deutsch">🇩🇪</button>
+            <button class="lang-btn" data-lang="en" title="English">🇺🇸</button>
+        </div>
         <button id="theme-toggle" class="theme-btn" title="Toggle Theme">🌙</button>
     </div>
-    <div class="lang-switch">
-        <button class="lang-btn" data-lang="en" title="English">🇺🇸</button>
-        <button class="lang-btn" data-lang="de" title="Deutsch">🇩🇪</button>
-    </div>
-    <div class="container">
-        <h1 id="welcome">Welcome!</h1>
-        <p id="description">Loading...</p>
-    </div>
-    <footer style="text-align:center; padding:1rem; opacity:0.7;">
-        <a href="/impressum" style="color:inherit;">Impressum</a>
+
+    <main class="container">
+        <header class="hero">
+            <h1><span data-i18n="hero_title">Moin! Ich bin Daniel</span><span class="cursor" aria-hidden="true">█</span></h1>
+            <p class="tagline" data-i18n="hero_sub">Das hier ist meine digitale Visitenkarte — entspannt, ein bisschen pixelig, ehrlich.</p>
+        </header>
+
+        <button class="business-card" id="business-card" type="button" aria-pressed="false" title="Klick mich!">
+            <span class="card-inner">
+                <span class="card-face card-front">
+                    <svg class="avatar" viewBox="0 0 8 8" width="64" height="64" aria-hidden="true">
+                        <rect x="2" y="0" width="4" height="1" fill="#5a3a1e"/>
+                        <rect x="1" y="1" width="6" height="5" fill="#e8b88a"/>
+                        <rect x="1" y="0" width="2" height="1" fill="#5a3a1e"/>
+                        <rect x="5" y="0" width="2" height="1" fill="#5a3a1e"/>
+                        <rect x="2" y="2" width="1" height="1" fill="#222"/>
+                        <rect x="5" y="2" width="1" height="1" fill="#222"/>
+                        <rect x="3" y="4" width="2" height="1" fill="#c97b5a"/>
+                        <rect x="1" y="6" width="6" height="2" fill="#3d7a4f"/>
+                        <rect x="3" y="6" width="2" height="1" fill="#e8b166"/>
+                    </svg>
+                    <span class="card-name">Daniel Hettich</span>
+                    <span class="card-role" data-i18n="card_role">Zuhause-Laborant · Tüftler · Sandkasten-Architekt</span>
+                    <span class="card-hint" data-i18n="card_hint">⟲ Klick für die Rückseite</span>
+                </span>
+                <span class="card-face card-back">
+                    <span class="card-back-title" data-i18n="card_back_title">Lass uns quatschen!</span>
+                    <span class="email-row">
+                        <code class="email" id="email">kontakt@daniel-hettich.de</code>
+                        <span class="copy-btn" id="copy-btn" role="button" tabindex="0" data-i18n="copy">kopieren</span>
+                    </span>
+                    <span class="copy-feedback" id="copy-feedback" data-i18n="copied"> clipboard ✓</span>
+                    <a class="gh-link" href="https://github.com/GitMinIT" target="_blank" rel="noopener">github.com/GitMinIT ↗</a>
+                </span>
+            </span>
+        </button>
+
+        <section class="interests" aria-label="Interessen">
+            <h2 data-i18n="interests_title">Zeug, das ich mag</h2>
+            <div class="chips">
+                <span class="chip" title="Linux">🐧 Linux</span>
+                <span class="chip" title="Open Source">🧡 Open Source</span>
+                <span class="chip" title="IT">💻 IT</span>
+                <span class="chip" title="DIY">🛠️ DIY</span>
+                <span class="chip" title="Gaming">🎮 Gaming</span>
+                <span class="chip" title="Sandbox Games">🏖️ Sandbox-Sims</span>
+            </div>
+        </section>
+
+        <section class="sandbox-section">
+            <h2 data-i18n="sandbox_title">Mini-Sandkasten</h2>
+            <p class="sandbox-hint" data-i18n="sandbox_hint">Malen mit Physik: Sand rieselt, Wasser fließt, Samen wachsen, wenn sie nass werden.</p>
+            <div class="tools" role="toolbar" aria-label="Sandkasten-Werkzeuge">
+                <button class="tool active" data-mat="1" data-i18n="mat_sand">Sand</button>
+                <button class="tool" data-mat="2" data-i18n="mat_water">Wasser</button>
+                <button class="tool" data-mat="3" data-i18n="mat_wall">Wand</button>
+                <button class="tool" data-mat="4" data-i18n="mat_seed">Samen</button>
+                <button class="tool tool-erase" data-mat="0" data-i18n="mat_erase">Radierer</button>
+                <button class="tool tool-reset" id="sandbox-reset" data-i18n="mat_reset">Leeren</button>
+            </div>
+            <canvas id="sandbox" width="160" height="100" aria-label="Interaktiver Sandkasten"></canvas>
+        </section>
+
+        <section class="contact">
+            <h2 data-i18n="contact_title">Kontakt</h2>
+            <p data-i18n="contact_hint">Schreib mir einfach — ich freu mich über Post von Menschen.</p>
+            <a class="contact-btn" id="contact-mail" href="mailto:kontakt@daniel-hettich.de">✉ kontakt@daniel-hettich.de</a>
+        </section>
+    </main>
+
+    <footer>
+        <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
     </footer>
     <script src="/assets/js/main.js"></script>
 </body>
