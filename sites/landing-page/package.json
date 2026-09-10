@@ -1,0 +1,10 @@
+{
+    "name": "daniel-hettich-landing",
+    "version": "3.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Cozy terminal business card — tests for the pure command engine in assets/js/commands.js",
+    "scripts": {
+        "test": "node --test test/*.test.mjs"
+    }
+}

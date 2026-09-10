@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daniel Hettich</title>
+    <title>Daniel Hettich — digital business card</title>
+    <meta name="description" content="Daniel Hettich — digital business card. Tinkerer, homelab, Linux. Mail & GitHub, served cozy.">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body data-theme="dark">
@@ -11,17 +12,21 @@
     <div class="theme-switch">
         <button id="theme-toggle" class="theme-btn" title="Toggle Theme">🌙</button>
     </div>
-    <div class="lang-switch">
-        <button class="lang-btn" data-lang="en" title="English">🇺🇸</button>
-        <button class="lang-btn" data-lang="de" title="Deutsch">🇩🇪</button>
-    </div>
-    <div class="container">
-        <h1 id="welcome">Welcome!</h1>
-        <p id="description">Loading...</p>
-    </div>
-    <footer style="text-align:center; padding:1rem; opacity:0.7;">
-        <a href="/impressum" style="color:inherit;">Impressum</a>
-    </footer>
-    <script src="/assets/js/main.js"></script>
+
+    <nav class="taskbar" aria-label="Taskbar">
+        <span class="tb-start">
+            <button class="tb-logo" id="tb-logo" type="button" title="gemütlich-os">☕</button>
+            <span class="tb-os" data-chrome="taskbar_os">cozy-os</span>
+        </span>
+        <span class="tb-middle"></span>
+        <span class="tb-right">
+            <button class="tb-theme" id="theme-toggle" type="button" data-chrome-title="theme_btn" title="light switch">☀</button>
+            <button class="tb-lang" data-lang="de" type="button">DE</button>
+            <button class="tb-lang" data-lang="en" type="button">EN</button>
+            <span class="tb-clock" id="tb-clock">--:--</span>
+        </span>
+    </nav>
+
+    <script type="module" src="/assets/js/main.js"></script>
 </body>
 </html>
