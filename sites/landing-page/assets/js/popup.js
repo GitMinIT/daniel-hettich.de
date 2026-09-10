@@ -32,6 +32,56 @@ function bringToFront(el) {
     el.style.zIndex = topZ;
 }
 
+/* shared with the VM window (vm.js) */
+export function registerWindow(el) {
+    bringToFront(el);
+    el.addEventListener('pointerdown', () => bringToFront(el));
+    return el;
+}
+
+export function makeDraggable(win, { minXPad = 80, minYPad = 40 } = {}) {
+    const titlebar = win.querySelector('.term-titlebar');
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let origX = 0;
+    let origY = 0;
+
+    titlebar.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.win-btn')) return;
+        dragging = true;
+        const rect = win.getBoundingClientRect();
+        origX = rect.left;
+        origY = rect.top;
+        startX = e.clientX;
+        startY = e.clientY;
+        titlebar.setPointerCapture(e.pointerId);
+        titlebar.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    titlebar.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dRect = desktopEl.getBoundingClientRect();
+        const rect = win.getBoundingClientRect();
+        const minX = dRect.left - rect.width + minXPad;
+        const maxX = dRect.right - minXPad;
+        const minY = dRect.top;
+        const maxY = dRect.bottom - minYPad;
+        const x = Math.min(Math.max(origX + e.clientX - startX, minX), maxX);
+        const y = Math.min(Math.max(origY + e.clientY - startY, minY), maxY);
+        win.style.left = `${x}px`;
+        win.style.top = `${y}px`;
+    });
+
+    const stop = () => {
+        dragging = false;
+        titlebar.classList.remove('dragging');
+    };
+    titlebar.addEventListener('pointerup', stop);
+    titlebar.addEventListener('pointercancel', stop);
+}
+
 function extractContent(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const main = doc.querySelector('main.legal');
@@ -75,56 +125,11 @@ function buildWindow(path, html) {
     // close via button
     win.querySelector('.win-close').addEventListener('click', () => closePopup(path));
 
-    // focus stack: clicking anywhere in the window brings it to front
-    win.addEventListener('pointerdown', () => bringToFront(win));
-
-    initPopupDrag(win);
+    // focus stack: handled by registerWindow (shared with vm.js)
+    makeDraggable(win);
     desktopEl.appendChild(win);
-    bringToFront(win);
+    registerWindow(win);
     return win;
-}
-
-function initPopupDrag(win) {
-    const titlebar = win.querySelector('.term-titlebar');
-    let dragging = false;
-    let startX = 0;
-    let startY = 0;
-    let origX = 0;
-    let origY = 0;
-
-    titlebar.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('.win-btn')) return;
-        dragging = true;
-        const rect = win.getBoundingClientRect();
-        origX = rect.left;
-        origY = rect.top;
-        startX = e.clientX;
-        startY = e.clientY;
-        titlebar.setPointerCapture(e.pointerId);
-        titlebar.classList.add('dragging');
-        e.preventDefault();
-    });
-
-    titlebar.addEventListener('pointermove', (e) => {
-        if (!dragging) return;
-        const dRect = desktopEl.getBoundingClientRect();
-        const rect = win.getBoundingClientRect();
-        const minX = dRect.left - rect.width + 80;
-        const maxX = dRect.right - 80;
-        const minY = dRect.top;
-        const maxY = dRect.bottom - 40;
-        const x = Math.min(Math.max(origX + e.clientX - startX, minX), maxX);
-        const y = Math.min(Math.max(origY + e.clientY - startY, minY), maxY);
-        win.style.left = `${x}px`;
-        win.style.top = `${y}px`;
-    });
-
-    const stop = () => {
-        dragging = false;
-        titlebar.classList.remove('dragging');
-    };
-    titlebar.addEventListener('pointerup', stop);
-    titlebar.addEventListener('pointercancel', stop);
 }
 
 export function openPopup(path) {
