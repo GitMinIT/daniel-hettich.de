@@ -9,18 +9,20 @@ The system follows a **Hub-and-Spoke** model:
 
 ## 📂 Directory Structure
 ```text
-/DHde
+/daniel-hettich.de
 ├── docker-compose.yml       # Orchestration file for all services
 ├── .gitignore               # Prevents secrets/certs from being committed
 ├── infrastructure/
+│   ├── compose/             # Compose overrides (e.g. HomeGate testing stack)
 │   └── nginx/
-│       └── conf.d/          # Virtual Host configurations (Proxy rules)
-└── sites/                   # Lightweight static sites (Landing page, etc.)
+│       ├── nginx.conf        # Global proxy config (server_tokens off)
+│       └── conf.d/           # Virtual Host configurations (Proxy rules)
+└── sites/                   # Static sites
     └── [site-name]/
         ├── Dockerfile        # Site-specific build instructions
-        └── html/             # Static assets
-└── services/                # Complex apps with their own DBs (Nextcloud, etc.)
-    └── [service-name]/
+        ├── html/             # Pages
+        ├── assets/           # CSS/JS
+        └── test/             # node --test suites
 ```
 
 ## 🛠 Implementation Rules for New Projects
@@ -43,9 +45,11 @@ When adding a new project (e.g., `nextcloud.daniel-hettich.de`):
 
 ### 3. Deployment Workflow
 1. Develop locally or in a dev-branch.
-2. Commit changes to GitHub.
-3. Pull changes on the server.
-4. Run `docker compose up -d --build` to apply updates.
+2. Run the test suite (`node --test sites/landing-page/test/*.test.mjs`) and build the
+   affected containers before opening a PR.
+3. Commit changes to GitHub via PR (see collaboration guidelines below).
+4. Pull changes on the server.
+5. Run `docker compose up -d --build` to apply updates.
 
 ## 🤝 Collaboration Guidelines (fork & branch model)
 
@@ -80,13 +84,15 @@ Multiple people work on this project. These guidelines are **not set in stone** 
 
 This project discloses that its content, design, images and source code were created with AI assistance. **Every new page must include the AI-notice badge**; impressum pages additionally need the "KI-Hinweis" section.
 
-**Badge** — fixed top-left, always visible, slightly transparent, links to `/impressum`:
+**Badge** — on the landing page the `✳` sits in the footer (opening the impressum popup);
+on standalone static pages it is fixed top-left, slightly transparent, linking back home:
 
 ```html
-<a class="ai-note" href="/impressum" title="Diese Seite wurde mit Unterstützung von KI erstellt" aria-label="Hinweis: Diese Seite wurde mit Unterstützung von KI erstellt. Zum Impressum.">✳ Mit KI erstellt</a>
+<a class="ai-note" href="/" title="Zur Startseite">← startseite</a>
 ```
 
-The badge CSS lives in `sites/landing-page/assets/css/style.css` (`.ai-note`) — new static pages just add the HTML snippet above.
+The badge CSS lives in `sites/landing-page/assets/css/style.css` (`.ai-note`) — new static
+pages just add the HTML snippet above.
 
 **Impressum "KI-Hinweis" section** (required text):
 
