@@ -233,6 +233,153 @@ body {
     padding: 0.05rem 0.3rem;
 }
 
+/* ================= windows-vm joke ================= */
+
+/* windows logo — keeps its brand color in both themes */
+.win-logo {
+    font-family: system-ui, sans-serif;
+    color: #0078d4;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.tb-vm {
+    font: inherit;
+    width: 34px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.tb-vm:hover { background: var(--accent-soft); }
+
+.vm-screen {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.85rem 1rem;
+    background: #06070a;             /* vm bios screen: black stays black */
+    color: #b8c4b8;
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.vm-line { white-space: pre-wrap; word-break: break-word; }
+
+/* ---------- bsod: hardcoded windows blue, ignores the cozy theme ---------- */
+
+.bsod {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.2rem 1.4rem;
+    background: #0078d4;
+    color: #fff;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.bsod-face {
+    font-size: 3.2rem;
+    line-height: 1;
+}
+
+.bsod-text {
+    max-width: 34rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.bsod-progress { font-size: 0.9rem; }
+
+.bsod-hint { margin: 0.4rem 0 0; font-size: 0.85rem; }
+
+.bsod-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+}
+
+.bsod-qr {
+    display: grid;
+    grid-auto-rows: 4px;
+    background: #fff;
+    padding: 3px;
+}
+
+.qr-row { display: flex; }
+
+.qr-row i {
+    width: 4px;
+    height: 4px;
+    display: block;
+}
+
+.qr-row i.on { background: #000; }
+
+.bsod-meta { font-size: 0.78rem; line-height: 1.5; }
+
+/* ---------- notification toast ---------- */
+
+.vm-toast {
+    position: fixed;
+    right: 0.9rem;
+    bottom: 3.4rem;
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    max-width: min(340px, calc(100vw - 1.8rem));
+    padding: 0.7rem 0.9rem;
+    background: var(--window);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    animation: toast-in 0.35s ease-out;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.vm-toast:hover { border-color: var(--accent); }
+
+.vm-toast-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    display: flex;
+}
+
+.vm-toast-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.vm-toast-text strong {
+    font-size: 0.74rem;
+    color: var(--text);
+}
+
+@keyframes toast-in {
+    from { transform: translateY(8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vm-toast { animation: none; }
+}
+
 /* ---------- titlebar ---------- */
 
 .term-titlebar {

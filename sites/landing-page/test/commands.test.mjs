@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRepl, card, cat, boot, commandNames, EMAIL, GITHUB, TEXT } from '../assets/js/commands.js';
+import { createRepl, card, cat, boot, commandNames, EMAIL, GITHUB, TEXT, vmBootScript, bsodContent, qrPattern } from '../assets/js/commands.js';
 
 const plain = (lines) => lines.map((l) => l.s ?? '').filter((s) => s !== undefined);
 
@@ -221,5 +221,70 @@ test('ls lists the bundled files', () => {
   const out = plain(replWith('en').execute('ls').lines)[0];
   for (const f of ['README.md', 'katze.txt', 'kontakt.txt']) {
     assert.ok(out.includes(f), `ls missing ${f}`);
+  }
+});
+
+/* ---------- windows-vm joke ---------- */
+
+test('vm boot script boots in both languages and ends in the bsod', () => {
+  for (const lang of ['de', 'en']) {
+    const steps = vmBootScript(lang);
+    assert.ok(steps.length >= 8, `${lang}: boot too short to be funny`);
+    assert.ok(steps.every((s) => typeof s.delay === 'number' && s.delay >= 0));
+    assert.equal(steps[steps.length - 1].t, 'bsod', 'boot must end with the bsod step');
+    assert.ok(steps.filter((s) => s.t === 'line').length >= 6, 'boot needs several console lines');
+    // the "almost there" gag must be in there at least twice
+    const gags = steps.filter((s) => /almost there/.test(s.s));
+    assert.ok(gags.length >= 2, `${lang}: "almost there" must repeat at least twice`);
+  }
+});
+
+test('bsod content carries the classics in both languages', () => {
+  for (const lang of ['de', 'en']) {
+    const b = bsodContent(lang);
+    assert.equal(b.emoji, ':(');
+    assert.ok(b.text.length >= 40, 'bsod text should sound like the real thing');
+    assert.match(b.code, /^COZY_VM_FAIL_0xC0FFEE$/);
+    assert.ok(b.progress.includes('%'));
+    assert.ok(b.stop.length > 0);
+  }
+});
+
+test('bsod content differs between languages but keeps the error code', () => {
+  const de = bsodContent('de');
+  const en = bsodContent('en');
+  assert.notEqual(de.text, en.text);
+  assert.equal(de.code, en.code);
+});
+
+test('qr pattern is deterministic and looks like a QR code', () => {
+  const a = qrPattern(42);
+  const b = qrPattern(42);
+  assert.deepEqual(a, b, 'same seed must produce the same QR (no rng drift between renders)');
+  assert.equal(a.length, 21);
+  assert.ok(a.every((row) => row.length === 21));
+  // finder patterns: the three corners must have the classic 7x7 rings
+  const corner = (ox, oy) => {
+    const ring = Math.max(Math.abs(ox - 3), Math.abs(oy - 3));
+    return ring === 1 ? 0 : 1;
+  };
+  for (const [ox, oy] of [[0, 0], [14, 0], [0, 14]]) {
+    for (let dy = 0; dy < 7; dy++) {
+      for (let dx = 0; dx < 7; dx++) {
+        assert.equal(a[oy + dy][ox + dx], corner(dx, dy), `finder pixel mismatch at ${ox},${oy}`);
+      }
+    }
+  }
+  assert.notDeepEqual(a, qrPattern(7), 'different seed should produce a different pattern');
+});
+
+test('vm texts exist in both languages with toast copy', () => {
+  for (const lang of ['de', 'en']) {
+    const vm = TEXT[lang].vm;
+    assert.ok(vm.toast_title);
+    assert.ok(vm.toast_body.length > 10);
+    assert.ok(vm.toast_aria);
+    assert.ok(vm.boot.length >= 8);
+    assert.ok(vm.bsod);
   }
 });

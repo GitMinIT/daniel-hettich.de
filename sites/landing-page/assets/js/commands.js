@@ -66,7 +66,8 @@ export const TEXT = {
       win_max: 'maximieren',
       win_close: 'schließen',
       win_imp_title: 'Impressum',
-      win_dat_title: 'Datenschutzerklärung'
+      win_dat_title: 'Datenschutzerklärung',
+      vm_open: 'Windows-VM öffnen'
     },
     prompt: { user: 'besucher', host: 'daniel-home' },
     welcome: [
@@ -127,6 +128,33 @@ export const TEXT = {
     impressum_cmd: '→ impressum',
     datenschutz_cmd: '→ datenschutz',
     echo_empty: '',
+    vm: {
+      toast_title: 'gemütlich-os · hypervisor',
+      toast_body: 'Die Windows-VM ist hochgefahren und bereit. Viel Spaß damit.',
+      toast_aria: 'Hinweis: Windows-VM ist bereit.',
+      boot: [
+        'cozy-hypervisor v1.3 — qemu 8.2 (gemütlich fork)',
+        'vm "windows11_gast" startet …',
+        ' allocating 4 GB ram … ok',
+        ' attaching disk0 (virtio) … ok',
+        ' attaching network (user-mode, throtted to gemütlich) … ok',
+        ' seabios: booting from hard disk …',
+        ' windows boot manager …',
+        ' loading kernel …',
+        ' starting services …',
+        ' almost there …',
+        ' almost there …',
+        ' almost there …'
+      ],
+      bsod: {
+        emoji: ':(',
+        text: 'Dein PC ist auf ein Problem gestoßen und muss neu gestartet werden. Wir sammeln nur einige Fehlerinfos und starten dann für dich neu.',
+        progress: '% fertiggestellt',
+        code: 'COZY_VM_FAIL_0xC0FFEE',
+        hint: 'Falls du einen Support-Mitarbeiter anrufst, gib ihm diese Info:',
+        stop: 'Vorgang beendet: GEMÜTLICH_BOOT'
+      }
+    },
     card: {
       name: 'Daniel Hettich',
       tagline: 'tüftler · homelab · linux',
@@ -164,7 +192,8 @@ export const TEXT = {
       win_max: 'maximize',
       win_close: 'close',
       win_imp_title: 'Imprint',
-      win_dat_title: 'Privacy'
+      win_dat_title: 'Privacy',
+      vm_open: 'Open the Windows VM'
     },
     prompt: { user: 'visitor', host: 'daniel-home' },
     welcome: [
@@ -225,6 +254,33 @@ export const TEXT = {
     impressum_cmd: '→ imprint',
     datenschutz_cmd: '→ privacy policy',
     echo_empty: '',
+    vm: {
+      toast_title: 'cozy-os · hypervisor',
+      toast_body: 'The Windows VM has booted and is ready. Enjoy responsibly.',
+      toast_aria: 'Notice: Windows VM is ready.',
+      boot: [
+        'cozy-hypervisor v1.3 — qemu 8.2 (gemütlich fork)',
+        'booting vm "windows11_guest" …',
+        ' allocating 4 GB ram … ok',
+        ' attaching disk0 (virtio) … ok',
+        ' attaching network (user-mode, throttled to cozy) … ok',
+        'seabios: booting from hard disk …',
+        'windows boot manager …',
+        ' loading kernel …',
+        ' starting services …',
+        ' almost there …',
+        ' almost there …',
+        ' almost there …'
+      ],
+      bsod: {
+        emoji: ':(',
+        text: 'Your PC ran into a problem and needs to restart. We are just collecting some error info, and then we will restart for you.',
+        progress: '% complete',
+        code: 'COZY_VM_FAIL_0xC0FFEE',
+        hint: 'If you call a support person, give them this info:',
+        stop: 'Failure: COZY_BOOT'
+      }
+    },
     card: {
       name: 'Daniel Hettich',
       tagline: 'tinkerer · homelab · linux',
@@ -267,6 +323,57 @@ export function cat(file, lang) {
 
 export function commandNames() {
   return [...CMD_LIST];
+}
+
+/* ================= windows-vm joke (pure) ================= */
+
+/** deterministic fake-QR pattern (21x21 + quiet zone), same on every boot */
+export function qrPattern(seed = 42, size = 21) {
+  const rnd = mulberry32(seed);
+  const grid = [];
+  for (let y = 0; y < size; y++) {
+    const row = [];
+    for (let x = 0; x < size; x++) {
+      const finder =
+        (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
+      if (finder) {
+        const fx = x < 7 ? x : x - (size - 7);
+        const fy = y < 7 ? y : y - (size - 7);
+        const ring = Math.max(Math.abs(fx - 3), Math.abs(fy - 3));
+        row.push(ring === 1 ? 0 : 1);
+        continue;
+      }
+      row.push(rnd() < 0.45 ? 1 : 0);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** vm boot steps for the console renderer: fixed boot lines, then the bsod */
+export function vmBootScript(lang, seed = 42) {
+  const t = TEXT[lang].vm;
+  const steps = [];
+  t.boot.forEach((s, i) => {
+    steps.push({ t: 'line', s, delay: i === 0 ? 150 : 260 + (s.includes('almost there') ? 420 : 0) });
+  });
+  steps.push({ t: 'line', s: '', delay: 300 });
+  steps.push({ t: 'bsod', delay: 150 });
+  return steps;
+}
+
+export function bsodContent(lang) {
+  return TEXT[lang].vm.bsod;
 }
 
 export function createRepl({ lang = 'en', theme = 'dark', now = () => Date.now() } = {}) {

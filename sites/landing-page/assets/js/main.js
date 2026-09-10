@@ -3,6 +3,7 @@
 
 import { TEXT, boot, card, createRepl } from './commands.js';
 import { initPopupLinks, setPopupLang } from './popup.js';
+import { initVm } from './vm.js';
 
 const windowEl = document.getElementById('term-window');
 const outputEl = document.getElementById('term-output');
@@ -416,6 +417,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initKonami();
     initClock();
     initPopupLinks();
+    initVm();
     ensureRepl();
     printMany(boot(lang));
     inputEl.focus({ preventScroll: true });

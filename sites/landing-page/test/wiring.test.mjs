@@ -20,6 +20,7 @@ const mainJs = read('assets/js/main.js');
 const commandsJs = read('assets/js/commands.js');
 const styleCss = read('assets/css/style.css');
 const popupJs = read('assets/js/popup.js');
+const vmJs = read('assets/js/vm.js');
 
 const legalPages = ['impressum.html', 'datenschutz.html'].map((f) => ({
   name: f,
@@ -275,6 +276,53 @@ test('popup titles exist in both languages', () => {
 test('popups stack with a rising z-index', () => {
   assert.match(popupJs, /bringToFront/, 'popup module must manage focus stacking');
   assert.match(popupJs, /topZ \+= 1/, 'z-index must rise with each click');
+});
+
+/* ---------- windows-vm joke ---------- */
+
+test('taskbar exposes the vm button and main.js boots the joke', () => {
+  assert.match(indexHtml, /id="vm-toggle"/, 'index.html needs the vm taskbar button');
+  assert.match(indexHtml, /data-chrome-title="vm_open"/, 'vm button title must be translatable');
+  assert.match(mainJs, /import\s*\{[^}]*initVm[^}]*\}\s*from\s*'\.\/vm\.js'/, 'main.js must import initVm');
+  assert.match(mainJs, /initVm\(\)/, 'main.js must call initVm on boot');
+});
+
+test('vm toast appears after a delay, once per session, and opens the vm on click', () => {
+  assert.match(vmJs, /TOAST_DELAY\s*=\s*5000/, 'toast must show after a few seconds');
+  assert.match(vmJs, /sessionStorage/, 'toast must show only once per session');
+  assert.match(vmJs, /addEventListener\('click'/, 'toast must be clickable');
+  assert.match(vmJs, /dismissToast\(\);\s*openVm\(\)/, 'clicking the toast must open the vm');
+  assert.match(vmJs, /setAttribute\('role',\s*'status'\)/, 'toast must announce itself to screen readers');
+});
+
+test('vm window reuses the shared window chrome', () => {
+  assert.match(vmJs, /import\s*\{[^}]*makeDraggable[^}]*registerWindow[^}]*\}\s*from\s*'\.\/popup\.js'/, 'vm.js must reuse popup.js window helpers');
+  assert.match(vmJs, /win-close/, 'vm window needs a close button');
+  assert.match(vmJs, /vmBootScript/, 'vm boot must be driven by the pure boot script');
+  assert.match(vmJs, /bsodContent/, 'bsod must be rendered from the pure content');
+});
+
+test('bsod is hardcoded windows blue and ignores the cozy theme', () => {
+  const bsod = styleCss.match(/\.bsod\s*\{[^}]*\}/);
+  assert.ok(bsod, '.bsod rules missing');
+  assert.match(bsod[0], /background:\s*#0078d4/, 'bsod must be windows blue');
+  assert.match(bsod[0], /color:\s*#fff/, 'bsod text must be white');
+  // and it must not read any theme variables
+  assert.doesNotMatch(bsod[0], /var\(--/, 'bsod must not use theme variables');
+});
+
+test('vm console keeps its own black bios screen', () => {
+  const screen = styleCss.match(/\.vm-screen\s*\{[^}]*\}/);
+  assert.ok(screen, '.vm-screen rules missing');
+  assert.match(screen[0], /background:\s*#06070a/, 'bios screen must be (near) black');
+  assert.match(screen[0], /overflow-y:\s*auto/, 'boot log must scroll inside the window');
+});
+
+test('toast styling exists and is positioned above the taskbar', () => {
+  const toast = styleCss.match(/\.vm-toast\s*\{[^}]*\}/);
+  assert.ok(toast, '.vm-toast rules missing');
+  assert.match(toast[0], /position:\s*fixed/, 'toast must be fixed to the viewport');
+  assert.match(toast[0], /bottom:/, 'toast must sit above the taskbar');
 });
 
 /* ---------- legal pages keep their meta posture ---------- */
