@@ -1,9 +1,9 @@
 {
     "name": "daniel-hettich-landing",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "private": true,
     "type": "module",
-    "description": "Static digital business card — tests for the pure water/body physics in assets/js/main.js",
+    "description": "Cozy terminal business card — tests for the pure command engine in assets/js/commands.js",
     "scripts": {
         "test": "node --test test/*.test.mjs"
     }

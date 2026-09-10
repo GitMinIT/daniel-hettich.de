@@ -1,95 +1,80 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daniel Hettich</title>
-    <meta name="description" content="Daniel Hettich — digitale Visitenkarte. Tüftler, Linux-Fan, Sandkasten-Rebell.">
+    <title>Daniel Hettich — digital business card</title>
+    <meta name="description" content="Daniel Hettich — digital business card. Tinkerer, homelab, Linux. Mail & GitHub, served cozy.">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body data-theme="dark">
-    <a class="ai-note" href="/impressum" title="Diese Seite wurde mit Unterstützung von KI erstellt" aria-label="Hinweis: Diese Seite wurde mit Unterstützung von KI erstellt. Zum Impressum.">✳ Mit KI erstellt</a>
-    <div class="top-switches">
-        <div class="lang-switch">
-            <button class="lang-btn" data-lang="de" title="Deutsch">🇩🇪</button>
-            <button class="lang-btn" data-lang="en" title="English">🇺🇸</button>
-        </div>
-        <button id="theme-toggle" class="theme-btn" title="Toggle Theme">🌙</button>
-    </div>
+<body>
+    <div class="desktop" id="desktop">
 
-    <main class="container">
-        <header class="hero">
-            <h1><span data-i18n="hero_title">Moin! Ich bin Daniel</span><span class="cursor" aria-hidden="true">█</span></h1>
-            <p class="tagline" data-i18n="hero_sub">Digitale Visitenkarte. Handgemacht, ein bisschen chaos, von unten links.</p>
-        </header>
-
-        <button class="business-card" id="business-card" type="button" aria-pressed="false" title="Klick mich!">
-            <span class="card-inner">
-                <span class="card-face card-front">
-                    <span class="card-anarchy" aria-hidden="true">Ⓐ</span>
-                    <svg class="avatar" viewBox="0 0 8 8" width="64" height="64" aria-hidden="true">
-                        <rect x="2" y="0" width="4" height="1" fill="#5a3a1e"/>
-                        <rect x="1" y="1" width="6" height="5" fill="#e8b88a"/>
-                        <rect x="1" y="0" width="2" height="1" fill="#5a3a1e"/>
-                        <rect x="5" y="0" width="2" height="1" fill="#5a3a1e"/>
-                        <rect x="2" y="2" width="1" height="1" fill="#222"/>
-                        <rect x="5" y="2" width="1" height="1" fill="#222"/>
-                        <rect x="3" y="4" width="2" height="1" fill="#c97b5a"/>
-                        <rect x="1" y="6" width="6" height="2" fill="#333"/>
-                        <rect x="3" y="6" width="2" height="1" fill="#e8b166"/>
-                        <rect x="4" y="7" width="1" height="1" fill="#d16969"/>
+        <div class="desk-icons" aria-label="Desktop-Verknüpfungen">
+            <a class="desk-icon" href="mailto:kontakt@daniel-hettich.de">
+                <span class="di-art" aria-hidden="true">✉</span>
+                <span class="di-label" data-chrome="icon_mail_label">mail</span>
+            </a>
+            <a class="desk-icon" href="https://github.com/GitMinIT" target="_blank" rel="noopener">
+                <span class="di-art" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" width="28" height="28" fill="currentColor" aria-hidden="true">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.05-.13-.36-.91.08-1.9 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44.99.13 1.77.08 1.9.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
                     </svg>
-                    <span class="card-name">Daniel Hettich</span>
-                    <span class="card-role" data-i18n="card_role">Zuhause-Laborant · Tüftler · Sandkasten-Rebell</span>
-                    <span class="card-hint" data-i18n="card_hint">⟲ Klick für die Rückseite</span>
                 </span>
-                <span class="card-face card-back">
-                    <span class="card-back-title" data-i18n="card_back_title">Lass uns quatschen!</span>
-                    <span class="email-row">
-                        <code class="email" id="email">kontakt@daniel-hettich.de</code>
-                        <span class="copy-btn" id="copy-btn" role="button" tabindex="0" data-i18n="copy">kopieren</span>
-                    </span>
-                    <span class="copy-feedback" id="copy-feedback" data-i18n="copied"> clipboard ✓</span>
-                    <a class="gh-link" href="https://github.com/GitMinIT" target="_blank" rel="noopener">github.com/GitMinIT ↗</a>
-                </span>
-            </span>
-        </button>
+                <span class="di-label" data-chrome="icon_gh_label">github</span>
+            </a>
+            <a class="desk-icon" href="/impressum">
+                <span class="di-art" aria-hidden="true">§</span>
+                <span class="di-label" data-chrome="icon_imp_label">imprint</span>
+            </a>
+            <a class="desk-icon" href="/datenschutz">
+                <span class="di-art" aria-hidden="true">🔒</span>
+                <span class="di-label" data-chrome="icon_dat_label">privacy</span>
+            </a>
+        </div>
 
-        <section class="interests" aria-label="Interessen">
-            <h2 class="spray" data-i18n="interests_title">Zeug, das ich mag</h2>
-            <div class="sticker-board" id="sticker-board">
-                <span class="sticker sticker-linux"    data-word="Linux">🐧 Linux</span>
-                <span class="sticker sticker-oss"      data-word="Open Source">🧡 Open Source</span>
-                <span class="sticker sticker-it"       data-word="IT">💻 IT</span>
-                <span class="sticker sticker-diy"      data-word="DIY">🛠️ DIY</span>
-                <span class="sticker sticker-gaming"   data-word="Gaming">🎮 Gaming</span>
-                <span class="sticker sticker-sandbox"  data-word="Sandbox">🏖️ Sandbox</span>
-                <span class="sticker sticker-punk"     data-word="Do it yourself">✊ DIY-Ethik</span>
-                <span class="sticker sticker-libre"    data-word="Freie Software"> libre Software</span>
-                <span class="sticker sticker-soli"     data-word="Solidarität">✊ Solidarität</span>
+        <section class="term-window" id="term-window" aria-label="Terminal">
+            <div class="term-titlebar">
+                <span class="term-title" data-chrome="window_title">visitor@daniel-home: ~</span>
+                <div class="term-controls">
+                    <button class="win-btn" id="win-min" type="button" data-chrome-title="win_min" aria-label="minimize">–</button>
+                    <button class="win-btn" id="win-max" type="button" data-chrome-title="win_max" aria-label="maximize">▢</button>
+                    <button class="win-btn win-close" id="win-close" type="button" data-chrome-title="win_close" aria-label="close">✕</button>
+                </div>
             </div>
-            <p class="sticker-hint" data-i18n="sticker_hint">Sticker: ziehen zum Umsortieren, Doppelklick zum Drehen. Gieß sie nass!</p>
+            <div class="term-body">
+                <div class="term-output" id="term-output" aria-live="polite" data-chrome-label="output_aria">
+                    <div class="term-lines" id="term-lines"></div>
+                </div>
+                <div class="term-input-row">
+                    <label class="prompt" for="term-input"><span class="p-user"></span>@<span class="p-host"></span>:~$</label>
+                    <input id="term-input" class="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+                </div>
+            </div>
         </section>
 
-        <section class="contact">
-            <h2 class="spray" data-i18n="contact_title">Kontakt</h2>
-            <p data-i18n="contact_hint">Schreib mir einfach — ich freu mich über Post von Menschen.</p>
-            <a class="contact-btn" id="contact-mail" href="mailto:kontakt@daniel-hettich.de">✉ kontakt@daniel-hettich.de</a>
-        </section>
-    </main>
-
-    <footer>
-        <span class="footer-punk">no gods no masters —</span>
-        <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
-    </footer>
-
-    <div class="water-toolbar" id="water-toolbar">
-        <button class="wt-btn active" id="wt-drop" data-i18n-title="wt_drop" title="Wasser gießen (W)">💧</button>
-        <button class="wt-btn" id="wt-stir" data-i18n-title="wt_stir" title="Rühren (R)">🌀</button>
-        <button class="wt-btn" id="wt-drain" data-i18n-title="wt_drain" title="Abfließen lassen (D)">🚱</button>
+        <div class="footer">
+            <span data-chrome="made"></span>
+            <span class="footer-links">
+                <a href="/impressum" data-chrome="impressum">imprint</a> · <a href="/datenschutz" data-chrome="datenschutz">privacy</a> · <a href="#" id="footer-ai" data-chrome="ai_note">✳</a>
+            </span>
+        </div>
     </div>
-    <div class="water-hint" id="water-hint" data-i18n="water_hint">Wasser an: gedrückt halten zum Gießen 💧</div>
-    <canvas id="water-canvas" aria-hidden="true"></canvas>
-    <script src="/assets/js/main.js"></script>
+
+    <nav class="taskbar" aria-label="Taskbar">
+        <span class="tb-start">
+            <button class="tb-logo" id="tb-logo" type="button" title="gemütlich-os">☕</button>
+            <span class="tb-os" data-chrome="taskbar_os">cozy-os</span>
+        </span>
+        <span class="tb-middle"></span>
+        <span class="tb-right">
+            <button class="tb-theme" id="theme-toggle" type="button" data-chrome-title="theme_btn" title="light switch">☀</button>
+            <button class="tb-lang" data-lang="de" type="button">DE</button>
+            <button class="tb-lang" data-lang="en" type="button">EN</button>
+            <span class="tb-clock" id="tb-clock">--:--</span>
+        </span>
+    </nav>
+
+    <script type="module" src="/assets/js/main.js"></script>
 </body>
 </html>

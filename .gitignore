@@ -3,5 +3,4 @@ etc/letsencrypt/
 
 # Routing confs for other projects' sites (owned by their repos, mirrored here for the proxy mount)
 infrastructure/nginx/conf.d/pompui-*.conf
-.env
 secrets/
