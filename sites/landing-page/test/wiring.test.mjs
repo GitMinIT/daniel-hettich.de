@@ -19,6 +19,7 @@ const indexHtml = read('html/index.html');
 const mainJs = read('assets/js/main.js');
 const commandsJs = read('assets/js/commands.js');
 const styleCss = read('assets/css/style.css');
+const popupJs = read('assets/js/popup.js');
 
 const legalPages = ['impressum.html', 'datenschutz.html'].map((f) => ({
   name: f,
@@ -69,6 +70,16 @@ test('main.js imports everything it uses from commands.js', () => {
   for (const n of names) {
     assert.match(commandsJs, new RegExp(`\\b(?:export)\\s+(?:function|const)\\s+${n}\\b`), `commands.js must export ${n}`);
   }
+});
+
+test('main.js wires up the popup module', () => {
+  const imports = mainJs.match(/import\s*\{([^}]*)\}\s*from\s*'\.\/popup\.js'/);
+  assert.ok(imports, "main.js must import from './popup.js'");
+  for (const n of imports[1].split(',').map((s) => s.trim()).filter(Boolean)) {
+    assert.match(popupJs, new RegExp(`export\\s+(?:async\\s+)?function\\s+${n}\\b`), `popup.js must export ${n}`);
+  }
+  assert.match(mainJs, /initPopupLinks\(\)/, 'main.js must call initPopupLinks on boot');
+  assert.match(mainJs, /setPopupLang\(/, 'language switches must update open popup titles');
 });
 
 /* ---------- DOM ids referenced by main.js exist in index.html ---------- */
@@ -223,6 +234,47 @@ test('output lines never use absolute/fixed positioning (the "random spots" bug)
   const block = styleCss.match(/\.tline\s*\{[^}]*\}/);
   assert.ok(block, '.tline rules missing');
   assert.doesNotMatch(block[0], /position:\s*(absolute|fixed)/, '.tline must stay in normal flow');
+});
+
+/* ---------- popup windows ---------- */
+
+test('legal pages open as popup windows, not navigation', () => {
+  // popup.js knows both routes
+  for (const route of ['/impressum', '/datenschutz']) {
+    assert.ok(popupJs.includes(`'${route}':`), `popup.js must map ${route}`);
+  }
+  // clicking an internal link is intercepted globally (desk icons, footer, terminal)
+  assert.match(popupJs, /a\[href="\/impressum"\], a\[href="\/datenschutz"\]/, 'popup link interception selector missing');
+  assert.match(popupJs, /e\.preventDefault\(\)/, 'intercepted clicks must not navigate');
+  // failed fetch falls back to normal navigation instead of dying
+  assert.match(popupJs, /window\.location\.href/, 'popup must fall back to navigation on error');
+});
+
+test('popups reuse the terminal window chrome and drag behavior', () => {
+  assert.match(styleCss, /\.popup-window\s*\{[^}]*position:\s*absolute/, 'popups must be absolutely positioned');
+  assert.match(styleCss, /\.popup-window\s*\{[^}]*overflow:\s*hidden/, 'popup corners must stay clipped');
+  assert.match(styleCss, /\.popup-body\s*\{[^}]*overflow-y:\s*auto/, 'popup body must scroll');
+  assert.match(popupJs, /term-titlebar/, 'popups must use the shared titlebar markup');
+  assert.match(popupJs, /setPointerCapture/, 'popup titlebar must support dragging');
+  assert.match(popupJs, /win-close/, 'popups must have a close button');
+});
+
+test('popup content is extracted from the real legal pages', () => {
+  assert.match(popupJs, /querySelector\('main\.legal'\)/, 'popup must extract main.legal content');
+  assert.match(popupJs, /fetch\(path\)/, 'popup must fetch the real page as single source of truth');
+});
+
+test('popup titles exist in both languages', () => {
+  for (const k of ['win_imp_title', 'win_dat_title']) {
+    assert.ok(TEXT.de.chrome[k], `TEXT.de.chrome.${k} missing`);
+    assert.ok(TEXT.en.chrome[k], `TEXT.en.chrome.${k} missing`);
+  }
+  assert.match(popupJs, /setPopupLang/, 'popup titles must follow language switches');
+});
+
+test('popups stack with a rising z-index', () => {
+  assert.match(popupJs, /bringToFront/, 'popup module must manage focus stacking');
+  assert.match(popupJs, /topZ \+= 1/, 'z-index must rise with each click');
 });
 
 /* ---------- legal pages keep their meta posture ---------- */

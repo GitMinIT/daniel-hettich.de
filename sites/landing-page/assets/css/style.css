@@ -179,6 +179,60 @@ body {
 
 .term-window.maximized .resize-handle { display: none; }
 
+/* ================= popup windows (impressum / datenschutz) ================= */
+
+.popup-window {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background: var(--window);
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.popup-icon {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+}
+
+.popup-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.9rem 1.1rem;
+}
+
+/* content pulled from the legal pages — keep it window-sized */
+.popup-content h1 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.8rem;
+}
+
+.popup-content h2 {
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin: 1.1rem 0 0.4rem;
+}
+
+.popup-content p { font-size: 0.76rem; margin: 0 0 0.6rem; }
+.popup-content ul { margin: 0.3rem 0 0.7rem 1rem; }
+.popup-content li { font-size: 0.76rem; margin: 0 0 0.3rem; list-style: disc outside; }
+.popup-content a { color: var(--link); }
+.popup-content strong { color: var(--text); font-weight: 700; }
+.popup-content code {
+    font-size: 0.72rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+    padding: 0.05rem 0.3rem;
+}
+
 /* ---------- titlebar ---------- */
 
 .term-titlebar {

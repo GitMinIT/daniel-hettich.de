@@ -2,6 +2,7 @@
    DOM glue only; all command logic lives in commands.js (pure, unit-tested). */
 
 import { TEXT, boot, card, createRepl } from './commands.js';
+import { initPopupLinks, setPopupLang } from './popup.js';
 
 const windowEl = document.getElementById('term-window');
 const outputEl = document.getElementById('term-output');
@@ -54,6 +55,7 @@ function setLang(next) {
     lang = next;
     localStorage.setItem('pref-lang', next);
     applyChrome();
+    setPopupLang(next);
 }
 
 /* ================= theme ================= */
@@ -413,6 +415,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initInput();
     initKonami();
     initClock();
+    initPopupLinks();
     ensureRepl();
     printMany(boot(lang));
     inputEl.focus({ preventScroll: true });

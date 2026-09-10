@@ -64,7 +64,9 @@ export const TEXT = {
       icon_term_label: 'terminal',
       win_min: 'minimieren',
       win_max: 'maximieren',
-      win_close: 'schließen'
+      win_close: 'schließen',
+      win_imp_title: 'Impressum',
+      win_dat_title: 'Datenschutzerklärung'
     },
     prompt: { user: 'besucher', host: 'daniel-home' },
     welcome: [
@@ -160,7 +162,9 @@ export const TEXT = {
       icon_term_label: 'terminal',
       win_min: 'minimize',
       win_max: 'maximize',
-      win_close: 'close'
+      win_close: 'close',
+      win_imp_title: 'Imprint',
+      win_dat_title: 'Privacy'
     },
     prompt: { user: 'visitor', host: 'daniel-home' },
     welcome: [
