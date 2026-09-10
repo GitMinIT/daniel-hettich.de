@@ -9,8 +9,7 @@ projects.
 
 ```
 infrastructure/nginx/   Shared proxy configuration (nginx.conf + conf.d server blocks)
-sites/landing-page/     Static landing page (nginx-unprivileged, port 8080)
-services/               Additional service definitions
+sites/landing-page/     Cozy terminal business card (nginx-unprivileged, port 8080)
 ```
 
 ## Deployment
@@ -21,11 +20,10 @@ read-only from `infrastructure/nginx/`. See `AGENTS.md` for the infrastructure m
 
 ## Licence
 
-- **Code** (everything under `infrastructure/`, `services/`, `sites/*/Dockerfile`,
-  `sites/*/nginx.conf`, `docker-compose.yml`): [MIT](LICENSE)
+- **Code** (everything under `infrastructure/`, `sites/*/assets/js/`,
+  `sites/*/Dockerfile`, `sites/*/nginx.conf`, `docker-compose.yml`): [MIT](LICENSE)
 - **Content** (texts, design, images and other media under `sites/*/html/`, e.g.
   impressum, Datenschutzerklärung, page copy): © Daniel Hettich, all rights reserved —
   not covered by the MIT licence and not licensed for reuse without permission.
 
-Third-party components keep their own licences; see the notice files shipped with them
-(e.g. `sites/snapotter/LICENSING.md`, AGPL-3.0).
+Third-party components keep their own licences; see the notice files shipped with them.
