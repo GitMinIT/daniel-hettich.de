@@ -12,7 +12,6 @@ const TOAST_DELAY = 5000;
 const TOAST_LIFETIME = 9000;
 
 let vmWin = null;
-let vmRunning = false;
 let bootTimer = null;
 
 function esc(s) {
@@ -45,7 +44,6 @@ function closeVm() {
         clearTimeout(bootTimer);
         bootTimer = null;
     }
-    vmRunning = false;
     if (vmWin) {
         vmWin.remove();
         vmWin = null;
@@ -127,7 +125,6 @@ export function openVm() {
         registerWindow(vmWin);
         return;
     }
-    vmRunning = true;
     vmWin = buildVmWindow();
     runBoot(vmWin);
 }
@@ -182,7 +179,7 @@ export function initVm() {
     const shown = sessionStorage.getItem('vm-toast-shown');
     if (shown) return;
     setTimeout(() => {
-        if (vmRunning || sessionStorage.getItem('vm-toast-shown')) return;
+        if (vmWin || sessionStorage.getItem('vm-toast-shown')) return;
         sessionStorage.setItem('vm-toast-shown', '1');
         toastEl = buildToast();
         document.body.appendChild(toastEl);

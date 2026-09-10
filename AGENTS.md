@@ -21,8 +21,17 @@
 
 ## Infrastructure Map
 - **global-proxy**: Nginx Alpine, handles SSL termination and routing for ALL projects on this server (also pompui.de sites). Config lives in `infrastructure/nginx/conf.d/` and is volume-mounted read-only into the container. Contains a catch-all hardening config (`00-hardening.conf`: unknown Host → 444, rate limiting) and `nginx.conf` with `server_tokens off`.
-- **landing-page**: Simple landing page on `daniel-hettich.de` / `www.daniel-hettich.de` (nginx-unprivileged, non-root, port 8080 internally).
+- **landing-page**: The cozy desktop business card on `daniel-hettich.de` / `www.daniel-hettich.de` (nginx-unprivileged, non-root, port 8080 internally). Vanilla HTML/CSS/JS — no framework, no cookies, no tracking.
 - Routes for pompui.de sites (`pompui-landing`, `pompui-garden-journal`, `pompui-snapotter`) also live in this project's `conf.d/` — see the pompui.de project for their container definitions.
+
+## Site Architecture (landing-page)
+- **`assets/js/commands.js`** — pure logic: command engine, all DE/EN copy, boot/BSOD/QR content. No DOM access; imported by Node tests.
+- **`assets/js/main.js`** — DOM glue for terminal + desktop (i18n, theme, drag/resize, window controls).
+- **`assets/js/popup.js`** — popup window manager; exports `makeDraggable`/`registerWindow`, reused by the VM window.
+- **`assets/js/vm.js`** — the Windows-VM joke (toast + BSOD console).
+- **`assets/js/legal.js`** — theme toggle only, for standalone legal pages.
+- **i18n contract**: every `data-chrome`/`data-chrome-title` key in HTML must exist in `TEXT.de.chrome` and `TEXT.en.chrome` — wiring tests enforce this.
+- **Tests**: `docker run --rm -v "$PWD/sites/landing-page:/app" -w /app node:22-alpine node --test test/*.test.mjs` — run before every PR. `test/wiring.test.mjs` also guards layout invariants (fixed window size, scrolling output, BSOD stays hardcoded blue).
 
 ## Git & Deployment Workflow (mandatory)
 - **Never push directly to `main`** — all changes go through a fork + PR (see `CONTRIBUTING.md`). Applies to humans and agents alike.
