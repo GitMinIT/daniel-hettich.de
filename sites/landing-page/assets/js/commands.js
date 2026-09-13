@@ -1,4 +1,4 @@
-export const EMAIL = 'kontakt@daniel-hettich.de';
+export const EMAIL = 'info@daniel-hettich.de';
 export const GITHUB = 'https://github.com/GitMinIT';
 export const GITHUB_LABEL = 'github.com/GitMinIT';
 
@@ -31,8 +31,8 @@ const FILES = {
     en: ['    /\\_/\\', '   ( o.o )', '    > ^ <', '', 'meow. :3']
   },
   'kontakt.txt': {
-    de: ['mail: kontakt@daniel-hettich.de', 'antwort kommt meist schnell — versprochen.', 'github: github.com/GitMinIT'],
-    en: ['mail: kontakt@daniel-hettich.de', 'replies are usually quick — promise.', 'github: github.com/GitMinIT']
+    de: ['mail: info@daniel-hettich.de', 'antwort kommt meist schnell — versprochen.', 'github: github.com/GitMinIT'],
+    en: ['mail: info@daniel-hettich.de', 'replies are usually quick — promise.', 'github: github.com/GitMinIT']
   },
   'geheim.txt': {
     de: ['hier steht nichts geheimes.', 'aber schön, dass du nachgeschaut hast. ☕'],
@@ -121,7 +121,7 @@ export const TEXT = {
     git: ['diese seite lebt im git:', 'github.com/GitMinIT'],
     man: 'man: keine man-pages hier. "help" hilft weiter.',
     su: 'su: willkommen, gast. root wirst du hier trotzdem nicht.',
-    mail: ['schreib mir:', 'kontakt@daniel-hettich.de'],
+    mail: ['schreib mir:', 'info@daniel-hettich.de'],
     mail_hint: 'antwort kommt meistens schnell.',
     github_cmd: ['mein code:', 'github.com/GitMinIT'],
     github_hint: 'sternchen sind willkommen.',
@@ -247,7 +247,7 @@ export const TEXT = {
     git: ['this page lives in git:', 'github.com/GitMinIT'],
     man: 'man: no man pages here. "help" helps.',
     su: 'su: welcome, guest. root you shall not become.',
-    mail: ['write me:', 'kontakt@daniel-hettich.de'],
+    mail: ['write me:', 'info@daniel-hettich.de'],
     mail_hint: 'replies are usually quick.',
     github_cmd: ['my code:', 'github.com/GitMinIT'],
     github_hint: 'stars are welcome.',
