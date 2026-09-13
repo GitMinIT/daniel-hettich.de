@@ -4,7 +4,6 @@
 - **Project Root**: `/var/www/daniel-hettich.de` (production host)
 - **Testing Host**: `/home/daniel/Projects/daniel-hettich.de` (HomeGate home server, debugging/testing only — production stack on `80`/`443` is NOT this machine; ports are taken by other services there)
 - **Domain**: `daniel-hettich.de` (+ `www.daniel-hettich.de`)
-- **Subdomain**: `gj.daniel-hettich.de` — Garden Journal moved to pompui.de (see `/var/www/pompui.de`)
 - **Architecture**: Dockerized with a global Nginx proxy (`global-proxy`) routing to internal containers.
 
 ## Testing Host (HomeGate)
