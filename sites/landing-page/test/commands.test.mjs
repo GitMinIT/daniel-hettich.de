@@ -9,7 +9,7 @@ function replWith(lang = 'de') {
 }
 
 test('exports expose the real contact data', () => {
-  assert.equal(EMAIL, 'kontakt@daniel-hettich.de');
+  assert.equal(EMAIL, 'info@daniel-hettich.de');
   assert.equal(GITHUB, 'https://github.com/GitMinIT');
   assert.ok(GITHUB.startsWith('https://'));
 });
