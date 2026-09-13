@@ -1,6 +1,6 @@
-# DHde Project Implementation Guide
+# daniel-hettich.de Project Implementation Guide
 
-Welcome to the DHde infrastructure. This project uses a modular, container-centric architecture designed for scalability, security, and isolation.
+Welcome to the daniel-hettich.de infrastructure. This project uses a modular, container-centric architecture designed for scalability, security, and isolation.
 
 ## 🏗 System Architecture
 The system follows a **Hub-and-Spoke** model:
@@ -9,7 +9,7 @@ The system follows a **Hub-and-Spoke** model:
 
 ## 📂 Directory Structure
 ```text
-/DHde
+/daniel-hettich.de
 ├── docker-compose.yml       # Orchestration file for all services
 ├── .gitignore               # Prevents secrets/certs from being committed
 ├── infrastructure/

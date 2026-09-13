@@ -1,4 +1,4 @@
-# Agent Guide for DHde Project
+# Agent Guide for daniel-hettich.de Project
 
 ## Environment
 - **Project Root**: `/var/www/daniel-hettich.de` (production host)
